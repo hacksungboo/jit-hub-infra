@@ -17,7 +17,7 @@ resource "null_resource" "install_tailscale" {
         ansible-playbook \
           -i localhost, \
           -c local \
-          ../../../../../ansible/playbook-tailscale.yml \
+          ../../../../../ansible/aws/playbook-tailscale.yml \
           --extra-vars "tailscale_auth_key=${var.auth_key}"
         EOT
   }
