@@ -16,4 +16,4 @@ ArgoCD Hub에서 관리하는 Spoke 클러스터 정보 및 동적 배포 오케
 
 ### 3. [applicationsets/](file:///home/user1/jit-hub-infra-test/gitops/argocd/applicationsets)
 *   **`app-applicationset.yaml`**: `jit-hub-app`을 3개 클러스터에 배포하며 공통 values와 클러스터 전용 values를 조합시킵니다.
-*   **`infra-applicationset.yaml`**: Matrix Generator를 통해 `cloudflared`, `monitoring-stack`, `ops` 차트를 3개 클러스터에 한 번에 배포하도록 엮어줍니다.
+*   **`infra-applicationset.yaml`**: Matrix Generator를 통해 `monitoring-stack`, `ops` 차트를 클러스터에 한 번에 배포하도록 엮어줍니다.

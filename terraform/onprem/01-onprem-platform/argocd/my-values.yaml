@@ -1,0 +1,7 @@
+# argocd/my-values.yaml
+
+server:
+  service:
+    type: LoadBalancer
+  extraArgs:
+    - --insecure
