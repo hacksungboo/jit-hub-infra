@@ -31,6 +31,14 @@ spec:
       namespace: argocd
     - server: 'https://kubernetes.default.svc'
       namespace: jit-hub
+    - server: '*'
+      namespace: jit-hub
+    - server: '*'
+      namespace: monitoring
+    - server: '*'
+      namespace: kube-system
+    - server: '*'
+      namespace: argocd
   # 프로젝트 내에서 생성할 수 있는 네임스페이스 리소스 제한 해제
   clusterResourceWhitelist:
     - group: '*'
