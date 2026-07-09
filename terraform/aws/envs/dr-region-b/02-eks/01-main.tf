@@ -25,7 +25,7 @@ module "eks" {
 
   # 워커 노드 그룹 설정
   node_groups = {
-    samsi-prod-eks-worker = {
+    samsi-dr-eks-worker = {
       #instance_types = ["t3.medium"]
       instance_types = ["t3.small"]
       ami_type       = "AL2_x86_64"
@@ -42,7 +42,7 @@ module "eks" {
         Monitoring = "true"
         NodeExporter = "true"
         Role = "worker-node"
-        Env = "prod"
+        Env = "dr"
       }
     }
   }

@@ -22,10 +22,10 @@ module "tailscale" {
 
   #cluster_name = module.eks.cluster_name
   cluster_name = data.terraform_remote_state.eks.outputs.cluster_name
-  region       = "ap-northeast-2"
+  region       = "ap-northeast-1"
   auth_key     = var.tailscale_auth_key
 
-  envs       = "prod"
+  envs       = "dr"
 }
 
 # ---------------------------------------------------------

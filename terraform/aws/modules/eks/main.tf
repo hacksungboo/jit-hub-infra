@@ -19,16 +19,19 @@ module "eks" {
     vpc-cni    = {}
   }
 
-  node_security_group_additional_rules = {
-    ingress_vpc = {
-      description = "VPC traffic"
-      protocol    = "-1"
-      from_port   = 0
-      to_port     = 0
-      type        = "ingress"
-      cidr_blocks = [var.vpc_cidr]
-    }
-  }
+  node_security_group_additional_rules = merge(
+    {
+      ingress_vpc = {
+        description = "VPC traffic"
+        protocol    = "-1"
+        from_port   = 0
+        to_port     = 0
+        type        = "ingress"
+        cidr_blocks = [var.vpc_cidr]
+      }
+    },
+    var.additional_node_security_group_rules
+  )
 
   eks_managed_node_groups = var.node_groups
 }

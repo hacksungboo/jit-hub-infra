@@ -7,3 +7,8 @@ variable "vpc_cidr" {}
 variable "node_groups" {
   type = any
 }
+
+variable "additional_node_security_group_rules" {
+  type    = any
+  default = {}
+}
