@@ -20,18 +20,46 @@ resource "cloudflare_record" "vmware_dns" {
   proxied = true
 }
 
+# 모니터링 수집용 서브도메인 DNS 레코드
+resource "cloudflare_record" "prometheus_ingest_dns" {
+  zone_id = var.cloudflare_zone_id
+  name    = "prometheus-ingest"
+  content = "${cloudflare_tunnel.vmware_tunnel.id}.cfargotunnel.com"
+  type    = "CNAME"
+  proxied = true
+}
+
+resource "cloudflare_record" "loki_ingest_dns" {
+  zone_id = var.cloudflare_zone_id
+  name    = "loki-ingest"
+  content = "${cloudflare_tunnel.vmware_tunnel.id}.cfargotunnel.com"
+  type    = "CNAME"
+  proxied = true
+}
+
 # --- 4. Tunnel 라우팅 규칙 (Ingress Controller 매핑) -------------------
 resource "cloudflare_tunnel_config" "vmware_config" {
   account_id = cloudflare_tunnel.vmware_tunnel.account_id
   tunnel_id  = cloudflare_tunnel.vmware_tunnel.id
 
   config {
+    # EKS → 온프레미스 Prometheus remote_write 수신
+    ingress_rule {
+      hostname = "prometheus-ingest.${var.domain_name}"
+      service  = "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local:80"
+    }
+    # EKS → 온프레미스 Loki 로그 수신
+    ingress_rule {
+      hostname = "loki-ingest.${var.domain_name}"
+      service  = "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local:80"
+    }
+    # 메인 앱 트래픽
     ingress_rule {
       hostname = var.domain_name
-      service  = "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local:80" 
+      service  = "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local:80"
     }
-    ingress_rule { 
-      service = "http_status:404" 
+    ingress_rule {
+      service = "http_status:404"
     }
   }
 }

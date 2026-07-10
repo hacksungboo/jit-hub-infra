@@ -1,19 +1,29 @@
 # gitops/values/eks-b/monitoring-stack-values.yaml
-prometheus:                                                                                                                        
-  enabled: true                                                                                                                    
-  prometheusSpec:                                                                                                                  
-    externalLabels:                                                                                                                
-      cluster: eks-b                                                                                                               
-    remoteWrite:                                                                                                                   
-      - url: "https://prometheus-ingest.jit-hub-domain.com/api/v1/write"                                                           
-                                                                                                                                    
-grafana:                                                                                                                           
-  enabled: false                                                                                                                   
-                                                                                                                                    
-promtail:                                                                                                                          
-  enabled: true                                                                                                                    
-  config:                                                                                                                          
-    clients:                                                                                                                       
-      - url: "https://loki-ingest.jit-hub-domain.com/loki/api/v1/push"                                                             
-        external_labels:                                                                                                           
-          cluster: eks-b            
+# EKS-B (DR) = 에이전트 (메트릭/로그를 온프레미스 중앙으로 전송)
+
+kube-prometheus-stack:
+  enabled: true
+
+  prometheus:
+    prometheusSpec:
+      externalLabels:
+        cluster: eks-b
+      remoteWrite:
+        - url: "https://prometheus-ingest.jit-hub-domain.com/api/v1/write"
+
+  grafana:
+    enabled: false
+
+  alertmanager:
+    enabled: false
+
+loki:
+  enabled: false
+
+promtail:
+  enabled: true
+  config:
+    clients:
+      - url: "https://loki-ingest.jit-hub-domain.com/loki/api/v1/push"
+        external_labels:
+          cluster: eks-b

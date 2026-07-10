@@ -1,23 +1,33 @@
 # gitops/values/eks-a/monitoring-stack-values.yaml
-prometheus:                                                                                                                        
-  enabled: true                                                                                                                    
-  prometheusSpec:                                                                                                                  
-    # 1. 중앙 Prometheus 수집 시 구분하기 위한 클러스터 레이블 추가                                                                
-    externalLabels:                                                                                                                
-      cluster: eks-a                                                                                                               
-    # 2. 온프레미스 중앙 Prometheus로 메트릭 강제 전송 (Remote Write)                                                              
-    remoteWrite:                                                                                                                   
-      - url: "https://prometheus-ingest.jit-hub-domain.com/api/v1/write"                                                           
-                                                                                                                                    
-grafana:                                                                                                                           
-  enabled: false # 중앙 Grafana에서 통합 모니터링하므로 비활성                                                                     
-                                                                                                                                    
-promtail:                                                                                                                          
-  enabled: true                                                                                                                    
-  config:                                                                                                                          
-    clients:                                                                                                                       
-      - url: "https://loki-ingest.jit-hub-domain.com/loki/api/v1/push"                                                             
-      # Cloudflare Tunnel 도메인을 타고 온프레미스 Loki로 로그 전송                                                                
-        # 3. 중앙 Loki에서 구분하기 위해 모든 로그에 eks-a 레이블 부착                                                             
-        external_labels:                                                                                                           
-          cluster: eks-a      
+# EKS-A = 에이전트 (메트릭/로그를 온프레미스 중앙으로 전송)
+
+kube-prometheus-stack:
+  enabled: true
+
+  prometheus:
+    prometheusSpec:
+      # 중앙 Prometheus 수신 시 클러스터 구분용 레이블
+      externalLabels:
+        cluster: eks-a
+      # 온프레미스 중앙 Prometheus로 메트릭 전송 (Cloudflare Tunnel 경유)
+      remoteWrite:
+        - url: "https://prometheus-ingest.jit-hub-domain.com/api/v1/write"
+
+  # 중앙 Grafana에서 통합 모니터링하므로 비활성
+  grafana:
+    enabled: false
+
+  alertmanager:
+    enabled: false
+
+loki:
+  enabled: false
+
+promtail:
+  enabled: true
+  config:
+    clients:
+      # 온프레미스 중앙 Loki로 로그 전송 (Cloudflare Tunnel 경유)
+      - url: "https://loki-ingest.jit-hub-domain.com/loki/api/v1/push"
+        external_labels:
+          cluster: eks-a

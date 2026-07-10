@@ -1,0 +1,74 @@
+# charts/monitoring-stack/values.yaml
+# 기본값 - 환경별 values 파일로 오버라이드됨
+
+kube-prometheus-stack:
+  enabled: true
+
+  prometheus:
+    prometheusSpec:
+      retention: 15d
+      # remote_write 수신 활성화 (온프레미스 중앙 Prometheus용)
+      enableRemoteWriteReceiver: false
+      resources:
+        requests:
+          memory: 512Mi
+          cpu: 250m
+        limits:
+          memory: 2Gi
+          cpu: 1000m
+
+  # 기본적으로 Grafana 비활성 (온프레미스에서만 활성화)
+  grafana:
+    enabled: false
+
+  # AlertManager 비활성 (필요시 온프레미스에서 활성화)
+  alertmanager:
+    enabled: false
+
+  # Node Exporter - 모든 클러스터에서 노드 메트릭 수집
+  nodeExporter:
+    enabled: true
+
+  # kube-state-metrics - k8s 오브젝트 상태 수집
+  kubeStateMetrics:
+    enabled: true
+
+# 중앙 로그 저장소 - 기본 비활성 (온프레미스에서만 활성화)
+loki:
+  enabled: false
+  deploymentMode: SingleBinary
+  loki:
+    auth_enabled: false
+    commonConfig:
+      replication_factor: 1
+    storage:
+      type: filesystem
+    schemaConfig:
+      configs:
+        - from: "2024-01-01"
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: index_
+            period: 24h
+  singleBinary:
+    replicas: 1
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 100m
+      limits:
+        memory: 1Gi
+        cpu: 500m
+  # SingleBinary 모드에서 나머지 컴포넌트 비활성
+  backend:
+    replicas: 0
+  read:
+    replicas: 0
+  write:
+    replicas: 0
+
+# 로그 수집기 - 모든 클러스터에서 활성화
+promtail:
+  enabled: true

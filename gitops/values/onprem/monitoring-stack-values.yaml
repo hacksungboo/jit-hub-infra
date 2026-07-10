@@ -1,20 +1,52 @@
 # gitops/values/onprem/monitoring-stack-values.yaml
-prometheus:                                                                                                                        
-      enabled: true                                                                                                                    
-      prometheusSpec:                                                                                                                  
-        externalLabels:                                                                                                                
-          cluster: onprem
-        remoteWrite:
-          # 온프레미스 내부망 IP를 사용해 다이렉트로 전송
-          - url: "http://<내부아이피>:9090/api/v1/write"
-grafana:
-      enabled: false # 외부에 Grafana가 단독 가동 중이므로 비활성
-  
+# 온프레미스 = 중앙 허브 (모든 클러스터의 메트릭/로그 수신)
+
+kube-prometheus-stack:
+  enabled: true
+
+  prometheus:
+    prometheusSpec:
+      externalLabels:
+        cluster: onprem
+      # 다른 클러스터에서 remote_write로 보내는 메트릭 수신
+      enableRemoteWriteReceiver: true
+      retention: 30d
+      resources:
+        requests:
+          memory: 1Gi
+          cpu: 500m
+        limits:
+          memory: 4Gi
+          cpu: 2000m
+
+  # 온프레미스에서만 Grafana 활성화 (통합 대시보드)
+  grafana:
+    enabled: true
+    adminPassword: "admin"  # 운영 시 Secret으로 교체 필요
+    additionalDataSources:
+      - name: Loki
+        type: loki
+        url: http://monitoring-stack-loki:3100
+        access: proxy
+        isDefault: false
+
+  alertmanager:
+    enabled: true
+
+loki:
+  enabled: true
+  deploymentMode: SingleBinary
+  backend:
+    replicas: 0
+  read:
+    replicas: 0
+  write:
+    replicas: 0
+
 promtail:
-      enabled: true
-      config:
-        clients:
-          # 온프레미스 내부망 IP를 사용해 다이렉트로 로그 전송
-          - url: "http://<내부아이피>:3100/loki/api/v1/push"
-            external_labels:
-              cluster: onprem
+  enabled: true
+  config:
+    clients:
+      - url: http://monitoring-stack-loki:3100/loki/api/v1/push
+        external_labels:
+          cluster: onprem
