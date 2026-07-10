@@ -28,70 +28,70 @@ module "tailscale" {
   envs       = "prod"
 }
 
-# # ---------------------------------------------------------
-# # Argo CD에 EKS 클러스터 등록 (Bearer Token 기반 선언적 연동)
-# # ---------------------------------------------------------
+# ---------------------------------------------------------
+# Argo CD에 EKS 클러스터 등록 (Bearer Token 기반 선언적 연동)
+# ---------------------------------------------------------
 
-# # EKS 내부에 Argo CD 관리용 서비스 어카운트(ServiceAccount) 생성 (기본 EKS 프로바이더 사용)
-# resource "kubernetes_service_account" "argocd_manager" {
-#   metadata {
-#     name      = "argocd-manager"
-#     namespace = "kube-system"
-#   }
-# }
+# EKS 내부에 Argo CD 관리용 서비스 어카운트(ServiceAccount) 생성 (기본 EKS 프로바이더 사용)
+resource "kubernetes_service_account" "argocd_manager" {
+  metadata {
+    name      = "argocd-manager"
+    namespace = "kube-system"
+  }
+}
 
-# # EKS 내 서비스 어카운트에 cluster-admin 관리 권한 바인딩
-# resource "kubernetes_cluster_role_binding" "argocd_manager_binding" {
-#   metadata {
-#     name = "argocd-manager-role-binding"
-#   }
-#   role_ref {
-#     api_group = "rbac.authorization.k8s.io"
-#     kind      = "ClusterRole"
-#     name      = "cluster-admin"
-#   }
-#   subject {
-#     kind      = "ServiceAccount"
-#     name      = kubernetes_service_account.argocd_manager.metadata[0].name
-#     namespace = "kube-system"
-#   }
-# }
+# EKS 내 서비스 어카운트에 cluster-admin 관리 권한 바인딩
+resource "kubernetes_cluster_role_binding" "argocd_manager_binding" {
+  metadata {
+    name = "argocd-manager-role-binding"
+  }
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = "cluster-admin"
+  }
+  subject {
+    kind      = "ServiceAccount"
+    name      = kubernetes_service_account.argocd_manager.metadata[0].name
+    namespace = "kube-system"
+  }
+}
 
-# # EKS 내 서비스 어카운트에 영구 로그인용 토큰 시크릿 연동 (Kubernetes v1.24+ 대응)
-# resource "kubernetes_secret" "argocd_manager_token" {
-#   metadata {
-#     name      = "argocd-manager-token"
-#     namespace = "kube-system"
-#     annotations = {
-#       "kubernetes.io/service-account.name" = kubernetes_service_account.argocd_manager.metadata[0].name
-#     }
-#   }
-#   type = "kubernetes.io/service-account-token"
-# }
+# EKS 내 서비스 어카운트에 영구 로그인용 토큰 시크릿 연동 (Kubernetes v1.24+ 대응)
+resource "kubernetes_secret" "argocd_manager_token" {
+  metadata {
+    name      = "argocd-manager-token"
+    namespace = "kube-system"
+    annotations = {
+      "kubernetes.io/service-account.name" = kubernetes_service_account.argocd_manager.metadata[0].name
+    }
+  }
+  type = "kubernetes.io/service-account-token"
+}
 
-# # 온프레미스 Argo CD 클러스터에 EKS-A 클러스터 등록용 Secret 생성 (kubernetes.onprem 프로바이더 별칭 사용)
-# resource "kubernetes_secret" "eks_a_cluster_secret" {
-#   provider = kubernetes.onprem
-#   metadata {
-#     name      = "cluster-eks-a"
-#     namespace = "argocd"
-#     labels = {
-#       "argocd.argoproj.io/secret-type" = "cluster"
-#       "environment"                    = "eks-a"
-#       "cloud-provider"                 = "aws"
-#       "status"                         = "active"
-#     }
-#   }
+# 온프레미스 Argo CD 클러스터에 EKS-A 클러스터 등록용 Secret 생성 (kubernetes.onprem 프로바이더 별칭 사용)
+resource "kubernetes_secret" "eks_a_cluster_secret" {
+  provider = kubernetes.onprem
+  metadata {
+    name      = "cluster-eks-a"
+    namespace = "argocd"
+    labels = {
+      "argocd.argoproj.io/secret-type" = "cluster"
+      "environment"                    = "eks-a"
+      "cloud-provider"                 = "aws"
+      "status"                         = "active"
+    }
+  }
   
-#   data = {
-#     name   = "eks-a"
-#     server = data.terraform_remote_state.eks.outputs.cluster_endpoint
-#     config = jsonencode({
-#       bearerToken = kubernetes_secret.argocd_manager_token.data["token"]
-#       tlsClientConfig = {
-#         insecure = false
-#         caData   = data.terraform_remote_state.eks.outputs.cluster_certificate_authority_data
-#       }
-#     })
-#   }
-# }
+  data = {
+    name   = "eks-a"
+    server = data.terraform_remote_state.eks.outputs.cluster_endpoint
+    config = jsonencode({
+      bearerToken = kubernetes_secret.argocd_manager_token.data["token"]
+      tlsClientConfig = {
+        insecure = false
+        caData   = data.terraform_remote_state.eks.outputs.cluster_certificate_authority_data
+      }
+    })
+  }
+}
