@@ -25,4 +25,4 @@
 
     - name: 4. Tailscale Subnet Router (Deployment) 설정 파일 적용
       ansible.builtin.shell: kubectl apply -f {{ playbook_dir }}/manifests/tailscale-deployment-dr.yaml
-      when: region == "dr" 
+      when: envs == "dr"
