@@ -11,6 +11,15 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "~> 2.30"
     }
+
+    helm = {
+      source = "hashicorp/helm"
+      version = "~> 2.14"
+    }
+    cloudflare = {
+      source = "cloudflare/cloudflare"
+      version = "~> 4.0"
+    }
   }
 }
 
@@ -66,4 +75,35 @@ provider "kubernetes" {
   alias          = "onprem"
   config_path    = "~/.kube/config"
   config_context = "kubernetes-admin@kubernetes"
+}
+
+data "terraform_remote_state" "onprem" {
+  backend = "local"
+
+  config = {
+    path = "../../../../onprem/01-onprem-platform/terraform.tfstate"
+  }
+}
+
+
+provider "helm" {
+  kubernetes {
+    host = data.terraform_remote_state.eks.outputs.cluster_endpoint
+    cluster_ca_certificate = base64decode(
+      data.terraform_remote_state.eks.outputs.cluster_certificate_authority_data
+    )
+    exec {
+      api_version = "client.authentication.k8s.io/v1beta1"
+      command     = "aws"
+      args = [
+        "eks", "get-token",
+        "--cluster-name", data.terraform_remote_state.eks.outputs.cluster_name,
+        "--region", "ap-northeast-2"
+      ]
+    }
+  }
+}
+
+provider "cloudflare" {
+  api_token = var.cloudflare_api_token
 }
