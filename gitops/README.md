@@ -55,3 +55,12 @@ kubectl get svc argocd-server -n argocd
     *   `targetRevision`을 `HEAD` 대신 **본인의 현재 작업 피처 브랜치명**(`feature/gitops-structure-init` 등)으로 임시 수정합니다.
     *   `jit-hub-project.yaml` 내 `sourceRepos` 목록에 **본인의 포크 깃허브 주소**를 임시 등록합니다.
     *   *수정 후*: Git에 커밋/푸시를 하고 `kubectl apply -f gitops/argocd/applicationsets/app-applicationset.yaml`을 적용하면 로컬 환경에서 정상 배포 작동 검증이 시작됩니다.
+
+    values/eks-a/jit-hub-values.yaml 파일의
+ingressRule:
+  namespace: "jit-hub"
+  host: "leechs.shop" # 필요시 eks-a 전용 도메인으로 변경 가능
+
+이곳의 leechs.shop 를 도메인 바로 바꿔주세요
+
+values/onprem/jit-hub-values.yaml도 바꿔주세요

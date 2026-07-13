@@ -1,14 +1,36 @@
 # gitops/values/eks-a/jit-hub-values.yaml
-jit-hub-app:
-  replicaCount: 3
-  resources:
-    limits:
-      cpu: 1000m
-      memory: 1024Mi
-    requests:
-      cpu: 200m
-      memory: 256Mi
-  # active 전용 환경 설정
-  env:
-    ENVIRONMENT: eks-a
-    DB_HOST: "onprem-postgres-service-ip" # 온프레 메인 DB 연동
+# Umbrella Chart (Subchart) 구조에 맞게 작성된 EKS-A (Active) 환경 설정
+
+ingressRule:
+  namespace: "jit-hub"
+  host: "leechs.shop" # 필요시 eks-a 전용 도메인으로 변경 가능
+
+gateway:
+  replicaCount: 1
+  image:
+    repository: "changsiuuuu/jit-hub-gateway"
+    tag: "latest"
+
+auth:
+  replicaCount: 1
+  image:
+    repository: "changsiuuuu/auth-service"
+    tag: "latest"
+
+weather:
+  replicaCount: 1
+  image:
+    repository: "changsiuuuu/weather-service"
+    tag: "latest"
+
+traffic:
+  replicaCount: 1
+  image:
+    repository: "changsiuuuu/traffic-service"
+    tag: "latest"
+
+tourist:
+  replicaCount: 1
+  image:
+    repository: "changsiuuuu/tourist-service"
+    tag: "latest"

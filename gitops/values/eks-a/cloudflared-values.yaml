@@ -1,7 +1,7 @@
 # gitops/values/eks-a/cloudflared-values.yaml
-replicaCount: 1 # 평시 액티브 트래픽 수신
+replicaCount: 1 # 평시
 tunnelId: "xxxx-xxxx-xxxx-xxxx"
 credentialsSecret: "cloudflared-creds"
 ingress:
-  - hostname: "jit-hub.domain.com"
-    service: http://nginx-service.jit-hub.svc.cluster.local:80
+  - hostname: "leechs.shop"
+    service: http://gateway-service.jit-hub.svc.cluster.local:80
