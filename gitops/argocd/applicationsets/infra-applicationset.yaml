@@ -22,8 +22,8 @@ spec:
               elements:
                 # - chart: cloudflared
                 #   namespace: kube-system
-                - chart: monitoring-stack
-                  namespace: monitoring
+                # - chart: monitoring-stack
+                #  namespace: monitoring
                 - chart: ops
                   namespace: kube-system
   template:

@@ -1,13 +1,36 @@
-# gitops/values/onprem/jit-hub-values.yaml
-jit-hub-app:
-  replicaCount: 1 # 최소 standby 실행
-  resources:
-    limits:
-      cpu: 500m
-      memory: 512Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
-  env:
-    ENVIRONMENT: onprem
-    DB_HOST: "onprem-postgres-vm-ip" # 온프레미스 별도 DB 노드의 사설 IP 연동 
+# On-Prem 클러스터 전용 Override Values
+# Umbrella Chart (Subchart) 구조에 맞게 작성
+
+ingressRule:
+  namespace: "jit-hub"
+  host: "leechs.shop"
+
+gateway:
+  replicaCount: 1
+  image:
+    repository: "changsiuuuu/jit-hub-gateway"
+    tag: "latest"
+
+auth:
+  replicaCount: 1
+  image:
+    repository: "changsiuuuu/auth-service"
+    tag: "latest"
+
+weather:
+  replicaCount: 1
+  image:
+    repository: "changsiuuuu/weather-service"
+    tag: "latest"
+
+traffic:
+  replicaCount: 1
+  image:
+    repository: "changsiuuuu/traffic-service"
+    tag: "latest"
+
+tourist:
+  replicaCount: 1
+  image:
+    repository: "changsiuuuu/tourist-service"
+    tag: "latest"
