@@ -1,0 +1,23 @@
+
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject 
+metadata:
+  name: traffic-service-scaler # TODO [1] 서비스 이름 ex) 서비스명-scaler
+  namespace: default
+
+spec:
+  scaleTargetRef:
+    name: traffic-service     # TODO [2] kubernetes 실제 Deployment 이름 확인 후 변경 ( 명령어 kubectl get deployment 로 확인 후 변경)
+    kind: Deployment
+  minReplicaCount: 1          # 최소 복제본
+  maxReplicaCount: 5          # 최대 복제본 
+  cooldownPeriod: 300         # 확장 후 냉각 기간 
+
+  triggers:
+  - type: prometheus
+    metadata:
+      serverAddress: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090     # TODO [3]  접속 하려는 prometheus 주소 확인 후 수정 
+      # 전체 요청 수를 기록하는 메트릭에서 traffic-service 라는 앱의 1분 동안의 데이터만 가져오기
+      query: |                            # TODO [4] prometheus.yaml 파일 job_name 확인 후 "weather-service" 부분 수정
+        sum(rate(http_requests_total{job="traffic-service"}[1m]))    
+      threshold: "200"        # 임계값 

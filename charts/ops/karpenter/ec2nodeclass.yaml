@@ -1,0 +1,32 @@
+apiVersion: karpenter.k8s.aws/v1beta1
+kind: EC2NodeClass
+metadata:
+  name: {{ .Values.karpenter.nodeClassName }}
+  namespace: {{ .Values.karpenter.namespace | default "karpenter" }}
+
+spec:
+  amiFamily: AL2    # amazon linux 2 사용? 확인 해봐야 할거
+  
+  role: {{ .Values.karpenter.iamRole }}     # IAM 설정
+  
+  # 서브넷 선택
+  subnetSelector:
+    karpenter.sh/discovery: "enabled"
+  
+  # 보안그룹 선택
+  securityGroupSelector:
+    karpenter.sh/discovery: "enabled"
+  
+  # EC2 태그
+  tags:
+    Environment: {{ .Values.environment }}
+    ManagedBy: karpenter
+   
+  # EBS 디스크 설정
+  blockDeviceMappings:
+    - deviceName: /dev/xvda
+      ebs:
+        volumeSize: {{ .Values.karpenter.ebs.volumeSize | default "100Gi" }}
+        volumeType: {{ .Values.karpenter.ebs.volumeType | default "gp3" }}
+        deleteOnTermination: true
+    # 디스크 설정 -> AWS 기본 값 생성시 크키, 타입 , 종료시 삭제 가 불명확 할 수 있으므로 설정

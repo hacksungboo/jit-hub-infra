@@ -18,6 +18,7 @@ destroy_layer () {
   terraform destroy -auto-approve
 }
 
+destroy_layer "04-eks-workloads"
 
 destroy_layer "03-platform"
 

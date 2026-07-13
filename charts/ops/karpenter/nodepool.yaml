@@ -1,0 +1,50 @@
+
+apiVersion: karpenter.sh/v1beta1
+kind: NodePool
+metadata:
+  name: {{ .Values.karpenter.nodePoolName }}  # values에 nodepool 이름 (karpenter: enabled: false # EKS 전용이므로 비활성화 로 onprem 배포 X)
+  namespace: {{ .Values.karpenter.namespace }}    # Karpenter가 설치된 네임스페이스
+
+spec:
+  # Pod 배치 규칙
+  template:
+    metadata:
+      labels:
+        pool: {{ .Values.environment }} # 이 Node들에 붙일 레이블
+        # 예: eks-a일 때 → pool: eks-a
+        #     eks-b일 때 → pool: eks-b
+        managed-by: karpenter           # 모든 Node에 공통으로 붙는 레이블   
+    
+    spec:
+      # EC2 인스턴스의 조건들
+      requirements:
+        # cpu
+        - key: node.kubernetes.io/instance-type
+          operator: In
+          values: {{ .Values.karpenter.instanceTypes | toJson }}
+        
+        # On-Demand 
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: {{ .Values.karpenter.capacityTypes | toJson }}
+      
+      # EC2 상세 설정 (en2nodeclass에서 vpc, 보안그룹 등 가져오는 설정 -> c2nodeclass.yaml의 metadata.name)
+      nodeClassRef:
+        name: {{ .Values.karpenter.nodeClassName }}
+  
+  # 비용 제어
+  limits:
+    cpu: {{ .Values.karpenter.limits.cpu | quote }}
+    memory: {{ .Values.karpenter.limits.memory }}
+  
+  # Node 최적화 (비용 절감) 
+  consolidation:
+    # 30초 후 불필요한 node 정리
+    expireAfter: {{ .Values.karpenter.consolidation.expireAfter | default "30s" }}
+    budgets:
+      - nodes: "10%"    # 안정성을 위해 XX% node만 종료 
+  
+  # 비어있는 Node 자동 종료
+  ttlSecondsAfterEmpty: {{ .Values.karpenter.ttlSecondsAfterEmpty | default "30" }}
+        
+       
