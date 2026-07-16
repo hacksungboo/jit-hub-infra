@@ -25,7 +25,7 @@ data "aws_eks_cluster_auth" "cluster" {
 
 # KEDA 설치
 module "keda" {
-  source = "../../../../shared/modules/keda"
+  source = "../../../modules/keda"
 
   release_name = "keda"
   namespace    = "keda"

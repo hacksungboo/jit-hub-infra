@@ -1,10 +1,10 @@
-// cloud-project-v3/load-test/tourism-service.js
+// cloud-project-v3/load-test/tourist-service.js
 
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 
 /**
- * KEDA 부하 테스트: tourism-service
+ * KEDA 부하 테스트: tourist-service
  * 
  * KEDA 설정:
  * - threshold: 150 RPS
@@ -31,17 +31,17 @@ export let options = {
 
 export default function () {
   const BASE_URL = 'http://localhost:8003';
-  const tourismUrl = `${BASE_URL}/api/tourism`;
+  const touristUrl = `${BASE_URL}/api/tourist`;
   
-  const res = http.get(tourismUrl, {
+  const res = http.get(touristUrl, {
     timeout: '5s',
-    tags: { name: 'GetTourism' },
+    tags: { name: 'Gettourist' },
   });
   
   check(res, {
     'status is 200': (r) => r.status === 200,
     'response time < 500ms': (r) => r.timings.duration < 500,
-    'has tourism data': (r) => r.body.includes('tourism') || r.body.includes('attractions'),
+    'has tourist data': (r) => r.body.includes('tourist') || r.body.includes('attractions'),
   });
   
   sleep(1 + Math.random());
@@ -49,8 +49,8 @@ export default function () {
 
 /**
  * 포트포워드:
- * kubectl port-forward svc/tourism-service 8082:80
+ * kubectl port-forward svc/tourist-service 8082:80
  *
  * 실행:
- * k6 run tourism-service.js
+ * k6 run tourist-service.js
  */

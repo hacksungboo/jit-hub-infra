@@ -34,6 +34,8 @@ apply_layer "03-platform"
 
 apply_layer "04-eks-workloads"
 
+apply_layer "05-eks-autoscaling"
+
 echo ""
 echo "================================="
 echo " Terraform Deployment Complete"

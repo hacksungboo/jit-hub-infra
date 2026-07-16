@@ -11,3 +11,8 @@ output "cluster_endpoint" {
 output "cluster_certificate_authority_data" {
   value = module.eks.cluster_certificate_authority_data
 }
+
+# Karpenter IRSA용 — 05-eks-autoscaling이 remote_state로 읽어감
+output "oidc_provider_arn" {
+  value = module.eks.oidc_provider_arn
+}
