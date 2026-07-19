@@ -4,9 +4,9 @@ kind: Service
 metadata:
   name: traffic-db
 spec:
-  type: {{ .Values.db.serviceType | default "ClusterIP" }}
-  {{- if and (eq (.Values.db.serviceType | default "ClusterIP") "LoadBalancer") .Values.db.loadBalancerIP }}
-  loadBalancerIP: {{ .Values.db.loadBalancerIP }}
+  type: LoadBalancer
+  {{- with .Values.db.loadBalancerIP }}
+  loadBalancerIP: {{ . }}
   {{- end }}
   ports:
   - port: 5432

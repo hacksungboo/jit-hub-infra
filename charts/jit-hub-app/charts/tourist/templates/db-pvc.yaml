@@ -8,7 +8,7 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: {{ .Values.db.persistence.size | default "100Mi" }}
+      storage: {{ .Values.db.persistence.size }}
   volumeName: {{ .Chart.Name }}-db-pv
   storageClassName: ""
 {{- end }}
