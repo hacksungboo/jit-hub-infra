@@ -18,5 +18,10 @@ module "vpc" {
 
   private_subnet_tags = {
     "kubernetes.io/role/internal-elb" = "1"
+    # Karpenter가 EC2를 만들 subnet을 찾는 표식
+    # ec2nodeclass.yaml의 subnetSelector 값과 일치해야 함
+    "karpenter.sh/discovery" = "enabled"
   }
+
+
 }

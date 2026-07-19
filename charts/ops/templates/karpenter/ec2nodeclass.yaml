@@ -1,0 +1,38 @@
+
+# EC2NodeClass: AWS 레벨에서 EC2를 어떻게 만들지 정의
+apiVersion: karpenter.k8s.aws/v1beta1
+kind: EC2NodeClass
+metadata:
+  name: {{ index .Values.karpenter.nodeClassName 0 }}
+
+spec:
+  # EKS 최적화 Amazon Linux 2 AMI 자동 선택
+  amiFamily: AL2
+
+  # 새 노드가 클러스터에 조인할 때 쓸 IAM Role
+  # 05-eks-autoscaling의 karpenter_node_iam_role_name 출력값과 일치해야 함
+  role: {{ .Values.karpenter.iamRole }}
+
+  # subnet 탐색 (01-network에서 private subnet에 태그 부착)
+  # 리전 B도 같은 태그만 붙이면 yaml 수정 없이 동작
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: "enabled"
+
+  # 보안그룹 탐색 (02-eks에서 node SG에 태그 부착)
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: "enabled"
+
+  # 생성되는 EC2에 붙일 태그 (비용 추적)
+  tags:
+    Environment: {{ .Values.environment }}
+    ManagedBy: karpenter
+
+  # EBS 설정 (AWS 기본값에 의존하지 않고 명시)
+  blockDeviceMappings:
+    - deviceName: /dev/xvda
+      ebs:
+        volumeSize: {{ .Values.karpenter.ebs.volumeSize | default "100Gi" }}
+        volumeType: {{ .Values.karpenter.ebs.volumeType | default "gp3" }}
+        deleteOnTermination: true

@@ -1,0 +1,25 @@
+
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject 
+metadata:
+  name: tourist-service-scaler 
+  namespace: default
+
+spec:
+  scaleTargetRef:
+    name: tourist-service     # jit-hub-app의 Deployment 이름과 일치하여 합니다.
+    kind: Deployment
+  minReplicaCount: 1          # 최소 복제본
+  maxReplicaCount: 5          # 최대 복제본 
+  cooldownPeriod: 300         # 확장 후 냉각 기간 
+
+  triggers:
+  - type: prometheus
+    metadata:
+    # kube-prometheus-stack 차트의 Prometheus 서비스명
+      serverAddress: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090      
+      metricName: tourist_request_rate
+      # 전체 요청 수를 기록하는 메트릭에서 tourism--service 라는 앱의 1분 동안의 데이터만 가져오기
+      query: |                            
+        sum(rate(http_requests_total{job="tourist-service"}[1m]))    
+      threshold: "200"        # 임계값 

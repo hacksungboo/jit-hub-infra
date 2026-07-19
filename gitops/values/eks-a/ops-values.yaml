@@ -1,4 +1,7 @@
 # gitops/values/eks-a/ops-values.yaml
+environment: eks-a      # nodepool.yaml이 {{ .Values.environment }}로 참조
+clusterName: eks-a
+
 keda:
   enabled: true
   minReplicaCount: 3
@@ -10,8 +13,41 @@ keda:
         metricName: http_requests_total
         query: sum(rate(http_requests_total[2m]))
         threshold: '50'
+
 karpenter:
   enabled: true
   nodePoolName: eks-a-nodepool
+  nodeClassName:
+    - eks-a-nodeclass
+  namespace: karpenter
+
+  iamRole: KarpenterNodeRole-eks-a
+
+  instanceTypes:   # 인스턴스 type
+    - t3.small     # cpu 2, 2GB
+    - t3.medium    # cpu 2, 4GB
+    - t3.large     # cpu 2, 8GB
+
+  capacityTypes:   # 인스턴스 유형
+    - on-demand
+
+  limits:           # 최대 cpu, memory 설정 값
+    cpu: "100"      # 최대치를 얼마로 설정할지
+    memory: "100Gi"
+
+  # Node 최적화 (비용 절감)
+  disruption:
+    # WhenEmpty        : Pod 없는 노드만 정리 (안전)
+    # WhenUnderutilized: 사용률 낮으면 Pod 몰아서 노드 줄임 (공격적)
+    consolidationPolicy: WhenEmpty
+    # 빈 상태로 이만큼 지나면 종료
+    consolidateAfter: 30s
+    # 노드 최대 수명 (생성 후 이만큼 지나면 무조건 교체)
+    expireAfter: 720h
+
+  ebs:
+    volumeSize: 100Gi            # 디스크 크기
+    volumeType: gp3              # EBS 타입
+
 customScheduler:
-  enabled: true 
+  enabled: true

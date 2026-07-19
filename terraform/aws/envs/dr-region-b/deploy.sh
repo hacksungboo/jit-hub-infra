@@ -32,6 +32,8 @@ apply_layer "02-eks"
 
 apply_layer "03-platform"
 
+apply_layer "04-eks-workloads"
+
 
 echo ""
 echo "================================="

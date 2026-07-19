@@ -1,0 +1,23 @@
+
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: weather-service-scaler  
+  namespace: default
+  
+spec:
+  scaleTargetRef:
+    name: weather-service   # jit-hub-app의 Deployment 이름과 일치하여 합니다.
+    kind: Deployment
+  minReplicaCount: 1          # 최소 복제본
+  maxReplicaCount: 5          # 최대 복제본 
+  cooldownPeriod: 300         # 확장 후 냉각 기간 
+  triggers:
+  - type: prometheus
+    metadata:
+      # kube-prometheus-stack 차트의 Prometheus 서비스명
+      serverAddress: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090   
+      metricName: weather_request_rate
+      query: |                       
+        sum(rate(http_requests_total{job="weather-service"}[1m]))     
+      threshold: "10"   # 임계값(RPS)
