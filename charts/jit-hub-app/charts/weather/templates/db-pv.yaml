@@ -1,0 +1,18 @@
+{{- if and .Values.db.enabled .Values.db.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Chart.Name }}-db-pv
+  labels:
+    app: {{ .Chart.Name }}-db
+spec:
+  capacity:
+    storage: {{ .Values.db.persistence.size }}
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    path: {{ .Values.db.persistence.nfs.path }}
+    server: {{ .Values.db.persistence.nfs.server }}
+{{- end }}

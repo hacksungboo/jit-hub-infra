@@ -16,21 +16,61 @@ auth:
   image:
     repository: "changsiuuuu/auth-service"
     tag: "latest"
+  db:
+    enabled: true
+    loadBalancerIP: "172.16.8.47"
+    host: "auth-db"
+    persistence:
+      enabled: true
+      size: 100Mi
+      nfs:
+        server: "172.16.8.203"
+        path: "/nfs/shared/jithub-authdb"
 
 weather:
   replicaCount: 1
   image:
     repository: "changsiuuuu/weather-service"
     tag: "latest"
+  db:
+    enabled: true
+    loadBalancerIP: "172.16.8.48"
+    host: "weather-db"
+    persistence:
+      enabled: true
+      size: 100Mi
+      nfs:
+        server: "172.16.8.203"
+        path: "/nfs/shared/jithub-weatherdb"
 
 traffic:
   replicaCount: 1
   image:
     repository: "changsiuuuu/traffic-service"
     tag: "latest"
+  db:
+    enabled: true
+    loadBalancerIP: "172.16.8.49"
+    host: "traffic-db"
+    persistence:
+      enabled: true
+      size: 100Mi
+      nfs:
+        server: "172.16.8.203"
+        path: "/nfs/shared/jithub-trafficdb"
 
 tourist:
   replicaCount: 1
   image:
     repository: "changsiuuuu/tourist-service"
     tag: "latest"
+  db:
+    enabled: true
+    loadBalancerIP: "172.16.8.50"
+    host: "tourist-db"
+    persistence:
+      enabled: true
+      size: 100Mi
+      nfs:
+        server: "172.16.8.203"
+        path: "/nfs/shared/jithub-touristdb"

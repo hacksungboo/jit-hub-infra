@@ -1,0 +1,93 @@
+{{- if .Values.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "postgres-gateway.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    {{- toYaml .Values.strategy | nindent 4 }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "postgres-gateway.name" . }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "postgres-gateway.name" . }}
+    spec:
+      serviceAccountName: {{ include "postgres-gateway.name" . }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: pgbouncer
+          image: {{ .Values.pgbouncer.image }}
+          ports:
+            - name: postgresql
+              containerPort: 5432
+          readinessProbe:
+            tcpSocket:
+              port: postgresql
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - name: pgbouncer-config
+              mountPath: /etc/pgbouncer/pgbouncer.ini
+              subPath: pgbouncer.ini
+              readOnly: true
+            - name: pgbouncer-users
+              mountPath: /etc/pgbouncer/userlist.txt
+              subPath: userlist.txt
+              readOnly: true
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+        - name: tailscale
+          image: {{ .Values.tailscale.image }}
+          env:
+            - name: TS_AUTHKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tailscale.authKeySecret.name }}
+                  key: {{ .Values.tailscale.authKeySecret.key }}
+            - name: TS_KUBE_SECRET
+              value: {{ .Values.tailscale.stateSecret }}
+            - name: TS_EXTRA_ARGS
+              value: {{ .Values.tailscale.extraArgs | quote }}
+            - name: TS_USERSPACE
+              value: "false"
+          {{- if .Values.tailscale.localCIDRs }}
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    for i in $(seq 1 60); do
+                      ip link show tailscale0 >/dev/null 2>&1 && break
+                      sleep 0.5
+                    done
+                    {{- range .Values.tailscale.localCIDRs }}
+                    ip rule show | grep -q "to {{ . }} lookup main" || ip rule add pref 100 to {{ . }} lookup main
+                    {{- end }}
+          {{- end }}
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+                - NET_RAW
+          volumeMounts:
+            - name: tun
+              mountPath: /dev/net/tun
+      volumes:
+        - name: pgbouncer-config
+          configMap:
+            name: {{ include "postgres-gateway.name" . }}-config
+        - name: pgbouncer-users
+          secret:
+            secretName: {{ include "postgres-gateway.name" . }}-users
+        - name: tun
+          hostPath:
+            path: /dev/net/tun
+{{- end }}

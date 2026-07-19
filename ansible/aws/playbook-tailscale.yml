@@ -16,6 +16,17 @@
         --from-literal=TS_AUTHKEY='{{ tailscale_auth_key }}'
         --dry-run=client -o yaml | kubectl apply -f -
 
+    - name: 2-1. JIT Hub 네임스페이스 생성
+      ansible.builtin.shell: >
+        kubectl create namespace jit-hub --dry-run=client -o yaml | kubectl apply -f -
+
+    - name: 2-2. PostgreSQL Gateway용 Tailscale Auth Key 시크릿 생성
+      ansible.builtin.shell: >
+        kubectl create secret generic postgres-gateway-tailscale-auth
+        --namespace=jit-hub
+        --from-literal=TS_AUTHKEY='{{ tailscale_auth_key }}'
+        --dry-run=client -o yaml | kubectl apply -f -
+
     - name: 3. Tailscale RBAC (권한) 설정 파일 적용
       ansible.builtin.shell: kubectl apply -f {{ playbook_dir }}/manifests/tailscale-rbac.yaml
 

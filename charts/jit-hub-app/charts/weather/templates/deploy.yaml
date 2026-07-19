@@ -12,6 +12,28 @@ spec:
       labels:
         app: weather
     spec:
+      {{- if (.Values.db.waitForReady | default true) }}
+      initContainers:
+      - name: wait-for-database
+        image: {{ .Values.db.waitImage | default "postgres:15-alpine" | quote }}
+        env:
+        - name: PGPASSWORD
+          value: {{ .Values.db.password | quote }}
+        - name: DB_HOST
+          value: {{ .Values.db.host | default "weather-db" | quote }}
+        - name: DB_USER
+          value: {{ .Values.db.user | quote }}
+        - name: DB_NAME
+          value: {{ .Values.db.name | quote }}
+        command:
+        - /bin/sh
+        - -ec
+        - |
+          until psql -w -h "$DB_HOST" -p 5432 -U "$DB_USER" -d "$DB_NAME" -c 'SELECT 1' >/dev/null 2>&1; do
+            echo "waiting for database at ${DB_HOST}:5432"
+            sleep 2
+          done
+      {{- end }}
       containers:
       - name: weather
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -19,6 +41,6 @@ spec:
         - containerPort: {{ .Values.service.port }}
         env:
         - name: JITHUB_DATABASE_URL
-          value: "postgresql://{{ .Values.db.user }}:{{ .Values.db.password }}@weather-db:5432/{{ .Values.db.name }}"
+          value: "postgresql://{{ .Values.db.user }}:{{ .Values.db.password }}@{{ .Values.db.host | default "weather-db" }}:5432/{{ .Values.db.name }}"
         - name: JITHUB_AUTH_SERVICE_URL
           value: "http://auth-service:8001"

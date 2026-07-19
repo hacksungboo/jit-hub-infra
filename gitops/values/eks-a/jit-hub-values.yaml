@@ -16,21 +16,33 @@ auth:
   image:
     repository: "changsiuuuu/auth-service"
     tag: "latest"
+  db:
+    enabled: false
+    host: "postgres-gateway"
 
 weather:
   replicaCount: 1
   image:
     repository: "changsiuuuu/weather-service"
     tag: "latest"
+  db:
+    enabled: false
+    host: "postgres-gateway"
 
 traffic:
   replicaCount: 1
   image:
     repository: "changsiuuuu/traffic-service"
     tag: "latest"
+  db:
+    enabled: false
+    host: "postgres-gateway"
 
 tourist:
   replicaCount: 1
   image:
     repository: "changsiuuuu/tourist-service"
     tag: "latest"
+  db:
+    enabled: false
+    host: "postgres-gateway"

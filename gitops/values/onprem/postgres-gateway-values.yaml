@@ -1,0 +1,2 @@
+# 온프렘 서비스는 로컬 PostgreSQL Service를 직접 사용합니다.
+enabled: false

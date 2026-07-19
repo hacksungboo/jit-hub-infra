@@ -1,0 +1,22 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "postgres-gateway.name" . }}-config
+data:
+  pgbouncer.ini: |
+    [databases]
+    {{- range .Values.pgbouncer.databases }}
+    {{ .name }} = host={{ .host }} port={{ .port | default 5432 }} dbname={{ .name }}
+    {{- end }}
+
+    [pgbouncer]
+    listen_addr = 0.0.0.0
+    listen_port = 5432
+    auth_type = plain
+    auth_file = /etc/pgbouncer/userlist.txt
+    pool_mode = {{ .Values.pgbouncer.poolMode }}
+    max_client_conn = {{ .Values.pgbouncer.maxClientConn }}
+    default_pool_size = {{ .Values.pgbouncer.defaultPoolSize }}
+    ignore_startup_parameters = extra_float_digits,options
+{{- end }}

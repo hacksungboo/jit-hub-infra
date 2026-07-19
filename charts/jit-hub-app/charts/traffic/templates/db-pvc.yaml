@@ -1,0 +1,14 @@
+{{- if and .Values.db.enabled .Values.db.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Chart.Name }}-db-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.db.persistence.size }}
+  volumeName: {{ .Chart.Name }}-db-pv
+  storageClassName: ""
+{{- end }}

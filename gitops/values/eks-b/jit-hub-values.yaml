@@ -1,15 +1,24 @@
 # gitops/values/eks-b/jit-hub-values.yaml
-jit-hub-app:
-  # 평시 Cold Standby이므로 replicaCount를 0으로 설정
-  # JIT 복구 시나리오(노드그룹 스케일업) 동작 후 파드가 스케줄링됨
-  replicaCount: 0 
-  resources:
-    limits:
-      cpu: 1000m
-      memory: 1024Mi
-    requests:
-      cpu: 200m
-      memory: 256Mi
-  env:
-    ENVIRONMENT: eks-b
-    DB_HOST: "onprem-postgres-service-ip" # 온프레 메인 DB 연동
+# 평시 Cold Standby입니다. JIT 전환 시 replicaCount를 올리고 gateway도 활성화합니다.
+gateway:
+  replicaCount: 0
+auth:
+  replicaCount: 0
+  db:
+    enabled: false
+    host: "postgres-gateway"
+weather:
+  replicaCount: 0
+  db:
+    enabled: false
+    host: "postgres-gateway"
+traffic:
+  replicaCount: 0
+  db:
+    enabled: false
+    host: "postgres-gateway"
+tourist:
+  replicaCount: 0
+  db:
+    enabled: false
+    host: "postgres-gateway"

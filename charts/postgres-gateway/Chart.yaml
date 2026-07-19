@@ -1,0 +1,6 @@
+apiVersion: v2
+name: postgres-gateway
+description: PgBouncer gateway with a Tailscale sidecar for on-prem PostgreSQL access
+type: application
+version: 0.1.0
+appVersion: "1.25.2"
