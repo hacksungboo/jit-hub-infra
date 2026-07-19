@@ -7,7 +7,7 @@ spec:
   description: "하이브리드 DR 아키텍처를 위한 멀티 클러스터 프로젝트"
   # PgBouncer gateway 테스트 브랜치가 있는 개인 platform repo
   sourceRepos:
-    - "https://github.com/changsiuuuu/jit-hub-infra-test.git"
+    - "https://github.com/hacksungboo/jit-hub-infra"
     - "https://github.com/*"
   # 배포를 허용할 대상 클러스터 및 네임스페이스
   destinations:
