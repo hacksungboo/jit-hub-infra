@@ -34,4 +34,9 @@ module "eks" {
   )
 
   eks_managed_node_groups = var.node_groups
+  # Karpenter가 새 노드에 붙일 보안그룹을 찾는 표식
+  # ec2nodeclass.yaml의 securityGroupSelector 값과 일치해야 함
+  node_security_group_tags = {
+    "karpenter.sh/discovery" = "enabled"
+  }
 }
