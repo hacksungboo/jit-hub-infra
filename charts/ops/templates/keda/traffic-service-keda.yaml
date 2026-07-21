@@ -22,4 +22,4 @@ spec:
       # 전체 요청 수를 기록하는 메트릭에서 traffic-service 라는 앱의 1분 동안의 데이터만 가져오기
       query: |                            
         sum(rate(http_requests_total{job="traffic-service"}[1m]))    
-      threshold: "200"        # 임계값 
+      threshold: "10"        # 임계값 

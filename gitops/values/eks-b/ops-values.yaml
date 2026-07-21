@@ -9,7 +9,7 @@ keda:
   triggers:
     - type: prometheus
       metadata:
-        serverAddress: http://prometheus-k8s.monitoring.svc.cluster.local:9090
+        serverAddress: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
         metricName: http_requests_total
         query: sum(rate(http_requests_total[2m]))
         threshold: '50'
