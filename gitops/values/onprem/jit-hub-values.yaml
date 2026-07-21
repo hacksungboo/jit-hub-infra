@@ -4,13 +4,11 @@
 ingressRule:
   namespace: "jit-hub"
   host: "ccmall.shop"
-
 gateway:
   replicaCount: 1
   image:
     repository: "harbor.ccmall.shop/jit-hub/jit-hub-gateway"
-    tag: "seed"
-
+    tag: "79d959256720"
 auth:
   replicaCount: 1
   image:
@@ -26,7 +24,6 @@ auth:
       nfs:
         server: "172.16.8.203"
         path: "/nfs/shared/jithub-authdb"
-
 weather:
   replicaCount: 1
   image:
@@ -42,7 +39,6 @@ weather:
       nfs:
         server: "172.16.8.203"
         path: "/nfs/shared/jithub-weatherdb"
-
 traffic:
   replicaCount: 1
   image:
@@ -58,7 +54,6 @@ traffic:
       nfs:
         server: "172.16.8.203"
         path: "/nfs/shared/jithub-trafficdb"
-
 tourist:
   replicaCount: 1
   image:
