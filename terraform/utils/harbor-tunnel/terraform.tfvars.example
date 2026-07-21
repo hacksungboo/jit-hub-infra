@@ -1,0 +1,24 @@
+# =============================================================================
+# terraform/utils/harbor-tunnel/terraform.tfvars.example
+#
+# 실제 사용 시 이 파일을 terraform.tfvars 로 복사한 뒤 값을 채우세요.
+#   cp terraform.tfvars.example terraform.tfvars
+# terraform.tfvars 는 .gitignore 에 반드시 추가 (토큰 노출 방지)
+# =============================================================================
+
+# --- Cloudflare (기존 프로젝트 tfvars 와 동일 값 사용 가능) ---
+cloudflare_api_token  = "<CLOUDFLARE_API_TOKEN>"   # Tunnel + DNS 편집 권한
+cloudflare_account_id = "<CLOUDFLARE_ACCOUNT_ID>"
+cloudflare_zone_id    = "<CCMALL_SHOP_ZONE_ID>"    # ccmall.shop 의 Zone ID
+
+# --- 도메인 ---
+domain_name = "ccmall.shop"
+
+# --- 온프레미스 클러스터 (connector 배포 대상) ---
+# 기본값과 같으면 생략 가능
+onprem_kubeconfig = "~/.kube/config"
+onprem_context    = "kubernetes-admin@kubernetes"
+
+# --- Harbor 대상 (기본값과 같으면 생략 가능) ---
+harbor_private_endpoint = "http://172.16.8.200:80"
+harbor_subdomain        = "harbor"

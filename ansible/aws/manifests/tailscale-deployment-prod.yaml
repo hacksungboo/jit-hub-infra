@@ -32,7 +32,7 @@ spec:
         #   value: "--advertise-routes=10.0.0.0/16,172.20.0.0/16"
 
         - name: TS_EXTRA_ARGS
-          value: "--advertise-tags=tag:prod-subnet-router --advertise-routes=10.0.0.0/16,172.20.0.0/16"
+          value: "--advertise-tags=tag:prod-subnet-router --advertise-routes=10.0.0.0/16,172.20.0.0/16 --accept-routes"
           
         - name: TS_USERSPACE
           value: "false"
