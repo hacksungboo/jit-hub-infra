@@ -8,7 +8,7 @@ module "cloudflared_tunnel" {
   cloudflare_zone_id    = var.cloudflare_zone_id
   tunnel_name             = "jit-hub-tunnel"
   domain_name              = var.domain_name
-  dns_records              = ["@", "argocd", "grafana"]
+  dns_records              = ["@", "argocd", "grafana", "prometheus-ingest", "loki-ingest"]
 
   ingress_rules = [
     # 서비스 트래픽 (평시 eks-a, 장애시 onprem, DR시 eks-b — 오리진은 replica로 스위칭)
@@ -24,13 +24,22 @@ module "cloudflared_tunnel" {
     {
       hostname = "grafana.${var.domain_name}"
       service  = "http://grafana.monitoring.svc.cluster.local:80"
+    },
+    # eks-a/eks-b → onprem 중앙 모니터링 수신 (charts/monitoring-stack의 ingest-ingress가 실제 라우팅)
+    {
+      hostname = "prometheus-ingest.${var.domain_name}"
+      service  = "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local:80"
+    },
+    {
+      hostname = "loki-ingest.${var.domain_name}"
+      service  = "http://ingress-nginx-controller.ingress-nginx.svc.cluster.local:80"
     }
   ]
 }
 
 # -------------------------------------------------------------------------------
-# 2. Cloudflared Connector 배포 (onprem 자체)
-#    ⚠ TEMPORARY — ArgoCD(charts/cloudflared) 완성되면 제거
+# 2. Cloudflared 접속용 Secret 생성 (onprem 자체)
+#    Deployment는 charts/cloudflared(Helm/ArgoCD, gitops/values/onprem/cloudflared-values.yaml)가 담당
 # -------------------------------------------------------------------------------
 module "cloudflared_connector" {
   source = "../../shared/modules/cloudflare-prod"
@@ -38,7 +47,6 @@ module "cloudflared_connector" {
   namespace    = "cloudflared"
   secret_name  = "cloudflared-token"
   tunnel_token = module.cloudflared_tunnel.tunnel_token
-  replicas     = 0   # 평시 0, 장애 시 1로 전환
 
   depends_on = [module.cloudflared_tunnel]
 }
