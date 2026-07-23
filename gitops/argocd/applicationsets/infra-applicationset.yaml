@@ -29,7 +29,7 @@ spec:
                   namespace: jit-hub
                   syncWave: "1"  
                 - chart: ops
-                  namespace: kube-system\
+                  namespace: kube-system
                   syncWave: "2"    
   template:
     metadata:
