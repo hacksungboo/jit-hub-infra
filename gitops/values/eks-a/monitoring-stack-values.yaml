@@ -20,6 +20,9 @@ kube-prometheus-stack:
 loki:
   enabled: false
 
+lokiLoadBalancer:
+  enabled: false
+
 promtail:
   enabled: true
   config:
