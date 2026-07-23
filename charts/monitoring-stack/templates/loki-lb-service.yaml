@@ -5,10 +5,9 @@ kind: Service
 metadata:
   name: loki-lb
   namespace: monitoring
-  annotations:
-    metallb.universe.tf/loadBalancerIPs: {{ .Values.lokiLoadBalancer.ip | quote }}
 spec:
   type: LoadBalancer
+  loadBalancerIP: {{ .Values.lokiLoadBalancer.ip }}
   selector:
     app.kubernetes.io/name: loki
     app.kubernetes.io/component: single-binary   # SingleBinary Pod 셀렉터
