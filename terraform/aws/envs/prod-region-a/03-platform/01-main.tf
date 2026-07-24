@@ -40,9 +40,9 @@ module "ingress_nginx" {
 }
 
 # ---------------------------------------------------------
-# 6. Cloudflared Connector 배포 (eks-a, 평시 replicas=1)
+# 6. Cloudflared 접속용 Secret 생성 (eks-a)
 #    ⚠ Tunnel은 여기서 만들지 않음 — onprem에서 생성된 것을 재사용
-#    ⚠ TEMPORARY — ArgoCD(charts/cloudflared) 완성되면 이 블록 제거
+#    ⚠ Deployment는 charts/cloudflared(Helm/ArgoCD, gitops/values/eks-a/cloudflared-values.yaml)가 담당
 # ---------------------------------------------------------
 module "cloudflared_connector" {
   source = "../../../../shared/modules/cloudflare-prod"
@@ -50,7 +50,6 @@ module "cloudflared_connector" {
   namespace    = "cloudflared"
   secret_name  = "cloudflared-token"
   tunnel_token = data.terraform_remote_state.onprem.outputs.tunnel_token
-  replicas     = 1
 }
 
 # ---------------------------------------------------------

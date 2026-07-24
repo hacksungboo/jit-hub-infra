@@ -1,7 +1,3 @@
 # gitops/values/onprem/cloudflared-values.yaml
 replicaCount: 1 # On-Prem 테스트를 위해 Active로 스위칭
-tunnelId: "xxxx-xxxx-xxxx-xxxx"
-credentialsSecret: "cloudflared-creds"
-ingress:
-  - hostname: "leechs.shop"
-    service: http://gateway-service.jit-hub.svc.cluster.local:80
+credentialsSecret: "cloudflared-token"
