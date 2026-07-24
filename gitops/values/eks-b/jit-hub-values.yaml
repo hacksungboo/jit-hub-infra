@@ -5,12 +5,12 @@ ingressRule:
   namespace: "jit-hub"
   host: "ccmall.shop" # 필요시 eks-a 전용 도메인으로 변경 가능
 gateway:
-  replicaCount: 1
+  replicaCount: 0
   image:
     repository: "harbor.ccmall.shop/jit-hub/jit-hub-gateway"
     tag: "79d959256720"
 auth:
-  replicaCount: 1
+  replicaCount: 0
   image:
     repository: "harbor.ccmall.shop/jit-hub/auth-service"
     tag: "seed"
@@ -18,7 +18,7 @@ auth:
     enabled: false
     host: "postgres-gateway"
 weather:
-  replicaCount: 1
+  replicaCount: 0
   image:
     repository: "harbor.ccmall.shop/jit-hub/weather-service"
     tag: "seed"
@@ -26,7 +26,7 @@ weather:
     enabled: false
     host: "postgres-gateway"
 traffic:
-  replicaCount: 1
+  replicaCount: 0
   image:
     repository: "harbor.ccmall.shop/jit-hub/traffic-service"
     tag: "seed"
@@ -34,7 +34,7 @@ traffic:
     enabled: false
     host: "postgres-gateway"
 tourist:
-  replicaCount: 1
+  replicaCount: 0
   image:
     repository: "harbor.ccmall.shop/jit-hub/tourist-service"
     tag: "seed"

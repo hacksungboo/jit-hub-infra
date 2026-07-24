@@ -13,5 +13,5 @@ tailscale:
   # 기존 EKS subnet router가 광고하는 대역은 tailscale table 대신 Pod의
   # 기본 main table을 먼저 조회한다. 규칙은 이 Gateway Pod 안에만 적용된다.
   localCIDRs:
-    - "10.0.0.0/16"
+    - "10.10.0.0/16"
     - "172.20.0.0/16"
