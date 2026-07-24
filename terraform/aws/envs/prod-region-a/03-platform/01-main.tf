@@ -120,3 +120,29 @@ resource "kubernetes_secret" "eks_a_cluster_secret" {
     })
   }
 }
+
+resource "kubernetes_namespace" "jit_hub" {
+  metadata {
+    name = "jit-hub"
+  }
+}
+
+resource "kubernetes_secret" "harbor_pull" {
+  metadata {
+    name      = "harbor-pull"
+    namespace = kubernetes_namespace.jit_hub.metadata[0].name
+  }
+  type = "kubernetes.io/dockerconfigjson"
+
+  data = {
+    ".dockerconfigjson" = jsonencode({
+      auths = {
+        "${var.harbor_registry_server}" = {
+          username = var.harbor_robot_user
+          password = var.harbor_robot_pull_token
+          auth     = base64encode("${var.harbor_robot_user}:${var.harbor_robot_pull_token}")
+        }
+      }
+    })
+  }
+}
