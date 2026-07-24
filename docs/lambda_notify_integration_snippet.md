@@ -2,8 +2,7 @@
 
 이 문서는 `terraform/aws/envs/personal-test/lambda_notify/`에 구현한 Slack 알림 Lambda를
 `jit-hub-app` 레포의 `services/sllm/app/poller.py`, `services/sllm/app/main.py`에서
-호출하는 예시 코드입니다. **이번 작업에서 jit-hub-app 레포는 실제로 수정하지 않았고**,
-이 문서에만 스니펫으로 남깁니다. jit-hub-app 쪽에 적용할 때 참고하세요.
+호출하는 예시 코드입니다. 이 스니펫은 이미 jit-hub-app 레포에 실제로 반영 완료되었습니다 (poller.py, main.py 실제 코드 참고).
 
 기존 두 파일의 스타일(httpx.AsyncClient, `httpx.ConnectError`/`TimeoutException`/`HTTPStatusError`를
 개별적으로 잡아서 로그만 남기고 메인 흐름은 끊지 않는 에러 격리 패턴)을 그대로 따랐습니다.
@@ -90,8 +89,7 @@ async def _notify_error_detected(entry: LogEntry) -> None:
 
 **사전 조건**: `AnalyzeRequest`에 `cluster_name` 선택 필드가 추가됨
 (jit-hub-app `feat/sllm-notify-integration` 브랜치, 커밋 완료 — 기존 `log_text`만 보내는
-요청과 호환됨). `poller.py`의 `_send_to_analyze`가 `entry.cluster_name`을 함께 보내도록
-연결하는 작업은 아직 남아있습니다.
+요청과 호환됨). `poller.py`의 `_send_to_analyze`가 `entry.cluster_name`을 함께 보내도록 연결하는 작업도 완료되었습니다.
 
 ```python
 class AnalyzeRequest(BaseModel):
