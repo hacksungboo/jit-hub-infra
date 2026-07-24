@@ -22,17 +22,47 @@ cleanup_k8s () {
     return 0
   fi
 
+  # ArgoCD가 selfHeal로 리소스를 재생성하면 삭제가 무한 반복되므로
+  # 온프레미스의 eks-a Application을 먼저 제거
+  echo "--- ArgoCD Application 제거 (selfHeal 차단) ---"
+  kubectl --context="${ONPREM_CONTEXT}" delete application \
+    -n argocd -l argocd.argoproj.io/instance --ignore-not-found 2>/dev/null || true
+  kubectl --context="${ONPREM_CONTEXT}" get application -n argocd -o name 2>/dev/null \
+    | grep "eks-a" \
+    | xargs -r kubectl --context="${ONPREM_CONTEXT}" delete -n argocd --ignore-not-found || true
+  sleep 10
+
+  echo "--- ScaledObject 제거 ---"
   kubectl delete scaledobject --all -A --ignore-not-found --timeout=60s || true
 
+  # finalizer가 남아 삭제되지 않는 경우 강제 제거
+  kubectl get scaledobject -A --no-headers 2>/dev/null \
+    | awk '{print $1, $2}' \
+    | while read ns name; do
+        [ -z "$name" ] && continue
+        echo "  finalizer 강제 제거: $ns/$name"
+        kubectl patch scaledobject "$name" -n "$ns" \
+          -p '{"metadata":{"finalizers":null}}' --type=merge || true
+      done
+
+  echo "--- Karpenter 리소스 제거 ---"
   kubectl delete nodepool --all --ignore-not-found --timeout=120s || true
   kubectl delete ec2nodeclass --all --ignore-not-found --timeout=120s || true
 
+  kubectl get nodepool --no-headers 2>/dev/null | awk '{print $1}' \
+    | while read name; do
+        [ -z "$name" ] && continue
+        kubectl patch nodepool "$name" -p '{"metadata":{"finalizers":null}}' --type=merge || true
+      done
+
+  echo "--- LoadBalancer Service 제거 (ELB 정리) ---"
   kubectl get svc -A -o jsonpath='{range .items[?(@.spec.type=="LoadBalancer")]}{.metadata.namespace}{" "}{.metadata.name}{"\n"}{end}' \
     | while read ns name; do
         [ -z "$name" ] && continue
         kubectl delete svc "$name" -n "$ns" --ignore-not-found || true
       done
 
+  echo "--- AWS 리소스 해제 대기 (120초) ---"
   sleep 120
 }
 
@@ -58,6 +88,29 @@ destroy_layer "04-eks-workloads"
 destroy_layer "03-platform"
 destroy_layer "02-eks"
 destroy_layer "01-network"
+
+# =========================================================
+# 잔여 ENI 정리 (보안그룹 삭제를 막는 원인)
+# =========================================================
+echo ""
+echo "================================="
+echo " Checking leftover ENIs"
+echo "================================="
+
+REGION="${AWS_REGION:-ap-northeast-2}"
+LEFT_ENI=$(aws ec2 describe-network-interfaces --region "$REGION" \
+  --filters "Name=status,Values=available" \
+  --query 'NetworkInterfaces[?starts_with(Description, `aws-K8S`)].NetworkInterfaceId' \
+  --output text 2>/dev/null || true)
+
+if [ -n "$LEFT_ENI" ]; then
+  echo "잔여 ENI 발견: $LEFT_ENI"
+  for eni in $LEFT_ENI; do
+    aws ec2 delete-network-interface --region "$REGION" --network-interface-id "$eni" || true
+  done
+else
+  echo "잔여 ENI 없음"
+fi
 
 # =========================================================
 # 로컬 kubeconfig 컨텍스트 정리 및 온프레미스 복귀
