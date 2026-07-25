@@ -16,14 +16,32 @@ destroy_layer() {
 cleanup_argocd() {
   echo -e "\n===== Cleaning up ArgoCD Applications ====="
 
-  # 1. ApplicationSet 먼저 삭제 (Application 재생성 방지)
-  kc delete applicationset --all --ignore-not-found --wait=true
+  # 1. ApplicationSet만 삭제하고 자식 Application은 남긴다.
+  # 기본 cascade 삭제를 사용하면 아래 patch 전에 Application이 사라지는 race가 발생한다.
+  kc delete applicationset --all \
+    --cascade=orphan \
+    --ignore-not-found \
+    --wait=true
 
   # 2. 모든 Application에 finalizer 부여 + auto-sync 중단
-  for app in $(kc get applications.argoproj.io -o name); do
-    kc patch "$app" --type merge \
-      --patch '{"metadata":{"finalizers":["resources-finalizer.argocd.argoproj.io"]},"spec":{"syncPolicy":{"automated":null}}}' >/dev/null
-  done
+  while IFS= read -r app; do
+    [[ -z "${app}" ]] && continue
+
+    if ! patch_output="$(
+      kc patch "${app}" --type merge \
+        --patch '{"metadata":{"finalizers":["resources-finalizer.argocd.argoproj.io"]},"spec":{"syncPolicy":{"automated":null}}}' \
+        2>&1
+    )"; then
+      # 이미 삭제된 Application은 건너뛰되, 권한/접속 오류는 숨기지 않는다.
+      if [[ "${patch_output}" == *"NotFound"* ]]; then
+        echo "Application already deleted, skip: ${app}"
+        continue
+      fi
+
+      echo "${patch_output}" >&2
+      return 1
+    fi
+  done < <(kc get applications.argoproj.io -o name)
 
   # 3. 모든 Application 삭제 (백그라운드) 
   kc delete applications.argoproj.io --all --ignore-not-found --wait=false

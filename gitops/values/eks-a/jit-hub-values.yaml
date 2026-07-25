@@ -3,41 +3,41 @@
 
 ingressRule:
   namespace: "jit-hub"
-  host: "ccmall.shop" # 필요시 eks-a 전용 도메인으로 변경 가능
+  host: "leechs.shop" # 필요시 eks-a 전용 도메인으로 변경 가능
 gateway:
   replicaCount: 1
   image:
-    repository: "harbor.ccmall.shop/jit-hub/jit-hub-gateway"
-    tag: "79d959256720"
+    repository: "harbor.leechs.shop/jit-hub/jit-hub-gateway"
+    tag: "v1"
 auth:
   replicaCount: 1
   image:
-    repository: "harbor.ccmall.shop/jit-hub/auth-service"
-    tag: "seed"
+    repository: "harbor.leechs.shop/jit-hub/auth-service"
+    tag: "v1"
   db:
     enabled: false
     host: "postgres-gateway"
 weather:
   replicaCount: 1
   image:
-    repository: "harbor.ccmall.shop/jit-hub/weather-service"
-    tag: "seed"
+    repository: "harbor.leechs.shop/jit-hub/weather-service"
+    tag: "v1"
   db:
     enabled: false
     host: "postgres-gateway"
 traffic:
   replicaCount: 1
   image:
-    repository: "harbor.ccmall.shop/jit-hub/traffic-service"
-    tag: "seed"
+    repository: "harbor.leechs.shop/jit-hub/traffic-service"
+    tag: "v1"
   db:
     enabled: false
     host: "postgres-gateway"
 tourist:
   replicaCount: 1
   image:
-    repository: "harbor.ccmall.shop/jit-hub/tourist-service"
-    tag: "seed"
+    repository: "harbor.leechs.shop/jit-hub/tourist-service"
+    tag: "v1"
   db:
     enabled: false
     host: "postgres-gateway"

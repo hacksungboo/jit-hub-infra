@@ -4,6 +4,7 @@ set -e
 
 ROOT_DIR=$(pwd)
 ONPREM_CONTEXT="kubernetes-admin@kubernetes"
+EKS_CONTEXT="eks-a"
 
 echo "================================="
 echo " Terraform Destroy Start"
@@ -51,6 +52,17 @@ destroy_layer () {
   terraform destroy -auto-approve
 }
 
+# cleanup 대상이 반드시 Primary 클러스터를 가리키도록 context를 고정
+kubectl config use-context "${EKS_CONTEXT}"
+
+# ApplicationSet이 cleanup한 EKS-A 리소스를 다시 생성하지 않도록
+# Primary 클러스터를 generator 선택 대상에서 먼저 제외
+kubectl \
+  --context "${ONPREM_CONTEXT}" \
+  -n argocd \
+  label secret cluster-eks-a environment- \
+  --overwrite || true
+
 cleanup_k8s
 
 destroy_layer "05-eks-autoscaling"
@@ -71,6 +83,7 @@ kubectl config use-context "${ONPREM_CONTEXT}"
 
 kubectl config delete-context eks-a || true
 
+# hello-eks의 ARN 형식으로 생성된 잔여 컨텍스트도 함께 삭제
 for ctx in $(kubectl config get-contexts -o name | grep "cluster/hello-eks"); do
   kubectl config delete-context "$ctx" || true
 done

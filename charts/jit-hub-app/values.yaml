@@ -13,16 +13,16 @@ auth:
         path: "/nfs/shared/jithub-authdb"
   enabled: true
   image:
-    repository: harbor.ccmall.shop/jit-hub/auth-service # 개인 도메인 수정 필요
-    tag: seed
+    repository: harbor.leechs.shop/jit-hub/auth-service # 개인 도메인 수정 필요
+    tag: v1
   replicaCount: 1
   service:
     port: 8001
 gateway:
   enabled: true
   image:
-    repository: harbor.ccmall.shop/jit-hub/jit-hub-gateway # 개인 도메인 수정 필요
-    tag: seed
+    repository: harbor.leechs.shop/jit-hub/jit-hub-gateway # 개인 도메인 수정 필요
+    tag: v1
   replicaCount: 1
   service:
     port: 80
@@ -44,8 +44,8 @@ tourist:
         path: "/nfs/shared/jithub-touristdb"
   enabled: true
   image:
-    repository: harbor.ccmall.shop/jit-hub/tourist-service # 개인 도메인 수정 필요
-    tag: seed
+    repository: harbor.leechs.shop/jit-hub/tourist-service # 개인 도메인 수정 필요
+    tag: v1
   replicaCount: 1
   service:
     port: 8004
@@ -64,8 +64,8 @@ traffic:
         path: "/nfs/shared/jithub-trafficdb"
   enabled: true
   image:
-    repository: harbor.ccmall.shop/jit-hub/traffic-service # 개인 도메인 수정 필요
-    tag: seed
+    repository: harbor.leechs.shop/jit-hub/traffic-service # 개인 도메인 수정 필요
+    tag: v1
   replicaCount: 1
   service:
     port: 8003
@@ -84,8 +84,8 @@ weather:
         path: "/nfs/shared/jithub-weatherdb"
   enabled: true
   image:
-    repository: harbor.ccmall.shop/jit-hub/weather-service # 개인 도메인 수정 필요
-    tag: seed
+    repository: harbor.leechs.shop/jit-hub/weather-service # 개인 도메인 수정 필요
+    tag: v1
   replicaCount: 1
   service:
     port: 8002

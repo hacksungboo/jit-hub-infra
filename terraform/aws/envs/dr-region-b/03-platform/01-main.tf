@@ -25,8 +25,39 @@ module "tailscale" {
   region       = "ap-northeast-1"
   auth_key     = var.tailscale_auth_key
 
-  envs       = "dr"
+  envs = "dr"
 }
+
+# DaemonSet이 모든 EKS 노드에서 Tailnet 연결과 온프레미스 라우팅을 준비할 때까지
+# 기다린다. 준비 전에는 Argo CD에 클러스터를 등록하지 않아 워크로드 선배포를 막는다.
+resource "null_resource" "wait_for_tailscale" {
+  depends_on = [module.tailscale]
+
+  triggers = {
+    cluster      = data.terraform_remote_state.eks.outputs.cluster_name
+    manifest_sha = filesha256("${path.root}/../../../../../ansible/aws/manifests/tailscale-deployment-dr.yaml")
+  }
+
+  provisioner "local-exec" {
+    working_dir = path.root
+
+    command = <<EOT
+      set -e
+
+      aws eks update-kubeconfig \
+        --region ap-northeast-1 \
+        --name ${data.terraform_remote_state.eks.outputs.cluster_name}
+
+      kubectl -n tailscale rollout status daemonset/tailscale-router --timeout=10m
+
+      desired=$(kubectl -n tailscale get daemonset/tailscale-router -o jsonpath='{.status.desiredNumberScheduled}')
+      ready=$(kubectl -n tailscale get daemonset/tailscale-router -o jsonpath='{.status.numberReady}')
+      test "$desired" -gt 0
+      test "$desired" = "$ready"
+    EOT
+  }
+}
+
 # ---------------------------------------------------------
 # 5. Ingress-Nginx 설치 (eks-b)
 # ---------------------------------------------------------
@@ -34,7 +65,7 @@ module "ingress_nginx" {
   source = "../../../../shared/modules/ingress-nginx"
 
   namespace     = "ingress-nginx"
-  service_type  = "LoadBalancer"   # eks-a는 클라우드 LB 사용
+  service_type  = "LoadBalancer" # eks-a는 클라우드 LB 사용
   replica_count = 2
 }
 
@@ -96,6 +127,9 @@ resource "kubernetes_secret" "argocd_manager_token" {
 # 온프레미스 Argo CD 클러스터에 EKS-b 클러스터 등록용 Secret 생성 (kubernetes.onprem 프로바이더 별칭 사용)
 resource "kubernetes_secret" "eks_b_cluster_secret" {
   provider = kubernetes.onprem
+
+  depends_on = [null_resource.wait_for_tailscale]
+
   metadata {
     name      = "cluster-eks-b"
     namespace = "argocd"
@@ -106,7 +140,7 @@ resource "kubernetes_secret" "eks_b_cluster_secret" {
       "status"                         = "active"
     }
   }
-  
+
   data = {
     name   = "eks-b"
     server = data.terraform_remote_state.eks.outputs.cluster_endpoint
