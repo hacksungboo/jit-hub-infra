@@ -44,7 +44,7 @@ spec:
             - -c
             - |
               set -e
-              LOG_FILE=/var/log/pods/jithub_log.log
+              LOG_FILE=/var/log/jithub/jithub_log.log
               if [ ! -f "$LOG_FILE" ]; then
                 mkdir -p "$(dirname "$LOG_FILE")"
                 echo "hello from ${NODE_IP}" > "$LOG_FILE"

@@ -38,4 +38,15 @@ promtail:
                 - localhost
               labels:
                 job: jithub-log-only
-                __path__: /var/log/pods/jithub_log.log
+                __path__: /var/log/jithub/*.log
+
+  extraVolumes:
+    - name: jithub-logs
+      hostPath:
+        path: /var/log/jithub
+        type: DirectoryOrCreate
+
+  extraVolumeMounts:
+    - name: jithub-logs
+      mountPath: /var/log/jithub
+      readOnly: true
