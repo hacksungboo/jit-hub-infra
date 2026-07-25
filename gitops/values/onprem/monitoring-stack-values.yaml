@@ -92,10 +92,11 @@ promtail:
       scrapeConfigs: |
         - job_name: jithub-log-only
           static_configs:
-            - targets: [localhost]
+            - targets:
+                - localhost
               labels:
                 job: jithub-log-only
-                __path__: /var/log/jithub_log.log
+                __path__: /var/log/pods/jithub_log.log
 
 # EKS 클러스터들의 remote_write/promtail을 받는 Ingress
 ingestIngress:
