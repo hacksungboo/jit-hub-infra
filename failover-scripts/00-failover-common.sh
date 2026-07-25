@@ -514,6 +514,9 @@ check_internal_health() {
       --silent \
       --show-error \
       --fail \
+      --retry "$HEALTH_RETRY" \
+      --retry-delay "$HEALTH_INTERVAL" \
+      --retry-all-errors \
       --max-time "$HEALTH_TIMEOUT" \
       "http://${APP_SERVICE}:${APP_PORT}${APP_HEALTH_PATH}"
 }
