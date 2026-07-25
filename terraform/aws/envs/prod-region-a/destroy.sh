@@ -98,8 +98,6 @@ cleanup_k8s
 destroy_layer "05-eks-autoscaling"
 destroy_layer "04-eks-workloads"
 destroy_layer "03-platform"
-destroy_layer "02-eks"
-destroy_layer "01-network"
 
 # =========================================================
 # 잔여 ENI 정리 (보안그룹 삭제를 막는 원인)
@@ -123,6 +121,9 @@ if [ -n "$LEFT_ENI" ]; then
 else
   echo "잔여 ENI 없음"
 fi
+
+destroy_layer "02-eks"
+destroy_layer "01-network"
 
 # =========================================================
 # 로컬 kubeconfig 컨텍스트 정리 및 온프레미스 복귀
