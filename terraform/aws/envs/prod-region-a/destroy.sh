@@ -136,10 +136,10 @@ kubectl config use-context "${ONPREM_CONTEXT}"
 
 kubectl config delete-context eks-a || true
 
-# hello-eks의 ARN 형식으로 생성된 잔여 컨텍스트도 함께 삭제
-for ctx in $(kubectl config get-contexts -o name | grep "cluster/hello-eks"); do
-  kubectl config delete-context "$ctx" || true
-done
+# # hello-eks의 ARN 형식으로 생성된 잔여 컨텍스트도 함께 삭제
+# for ctx in $(kubectl config get-contexts -o name | grep "cluster/hello-eks"); do
+#   kubectl config delete-context "$ctx" || true
+# done
 
 echo ""
 echo "================================="
