@@ -213,3 +213,36 @@ resource "kubernetes_secret" "harbor_pull" {
     })
   }
 }
+
+# jithub_log.log 초기화 DaemonSet이 모든 EKS 노드에 파일 생성을 마칠 때까지 기다린다.
+# promtail은 이 클러스터가 Argo CD에 등록된 뒤 charts/monitoring-stack으로 배포되는데,
+# 그 시점에 파일이 이미 존재해야 scrapeConfigs(__path__: /var/log/pods/jithub_log.log)가
+# 처음부터 정상 tail되고 Not Ready 루프에 빠지지 않는다.
+#
+# wait_for_tailscale이 이미 update-kubeconfig로 컨텍스트를 맞춰놨으므로
+# 여기서는 다시 호출하지 않고 그 결과에 의존만 한다.
+resource "null_resource" "wait_for_jithub_log_init" {
+  depends_on = [null_resource.wait_for_tailscale]
+
+  triggers = {
+    cluster      = data.terraform_remote_state.eks.outputs.cluster_name
+    manifest_sha = filesha256("${path.root}/../../../../../utils/jithub-log-init-daemonset.yaml")
+  }
+
+  provisioner "local-exec" {
+    working_dir = path.root
+
+    command = <<EOT
+      set -e
+
+      kubectl apply -f ${path.root}/../../../../../utils/jithub-log-init-daemonset.yaml
+
+      kubectl -n kube-system rollout status daemonset/jithub-log-init --timeout=5m
+
+      desired=$(kubectl -n kube-system get daemonset/jithub-log-init -o jsonpath='{.status.desiredNumberScheduled}')
+      ready=$(kubectl -n kube-system get daemonset/jithub-log-init -o jsonpath='{.status.numberReady}')
+      test "$desired" -gt 0
+      test "$desired" = "$ready"
+    EOT
+  }
+}

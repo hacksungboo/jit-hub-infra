@@ -109,6 +109,7 @@ promtail:
       mountPath: /var/log/jithub
       readOnly: true
 
+
 # EKS 클러스터들의 remote_write/promtail을 받는 Ingress
 ingestIngress:
   enabled: true
