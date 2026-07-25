@@ -23,13 +23,15 @@ cleanup_argocd() {
     --ignore-not-found \
     --wait=true
 
-  # 2. 모든 Application에 finalizer 부여 + auto-sync 중단
+  # 2. 모든 Application에 finalizer 부여 + auto-sync/진행 중 operation 중단
+  # 진행 중인 Sync가 Healthy 상태를 기다리고 있으면 삭제 finalizer가 prune을
+  # 시작하지 못할 수 있으므로, Application 삭제 전에 operation을 제거한다.
   while IFS= read -r app; do
     [[ -z "${app}" ]] && continue
 
     if ! patch_output="$(
       kc patch "${app}" --type merge \
-        --patch '{"metadata":{"finalizers":["resources-finalizer.argocd.argoproj.io"]},"spec":{"syncPolicy":{"automated":null}}}' \
+        --patch '{"metadata":{"finalizers":["resources-finalizer.argocd.argoproj.io"]},"operation":null,"spec":{"syncPolicy":{"automated":null}}}' \
         2>&1
     )"; then
       # 이미 삭제된 Application은 건너뛰되, 권한/접속 오류는 숨기지 않는다.
@@ -43,7 +45,7 @@ cleanup_argocd() {
     fi
   done < <(kc get applications.argoproj.io -o name)
 
-  # 3. 모든 Application 삭제 (백그라운드) 
+  # 3. 모든 Application 삭제 (백그라운드)
   kc delete applications.argoproj.io --all --ignore-not-found --wait=false
 
   # 4. 실제로 다 사라질 때까지 대기 (finalizer가 관리 리소스 prune 완료해야 사라짐)
