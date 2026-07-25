@@ -59,7 +59,7 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - test -f /var/log/pods/jithub_log.log
+                - test -f /var/log/jithub/jithub_log.log
             initialDelaySeconds: 2
             periodSeconds: 5
           resources:

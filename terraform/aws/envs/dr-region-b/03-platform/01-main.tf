@@ -161,7 +161,7 @@ resource "null_resource" "wait_for_jithub_log_init" {
 resource "kubernetes_secret" "eks_b_cluster_secret" {
   provider = kubernetes.onprem
 
-  depends_on = [null_resource.wait_for_tailscale, null_resource.wait_for_jithub_log_writer]
+  depends_on = [null_resource.wait_for_tailscale, null_resource.wait_for_jithub_log_init]
 
   metadata {
     name      = "cluster-eks-b"
