@@ -8,12 +8,12 @@ gateway:
   replicaCount: 1
   image:
     repository: "harbor.ccmall.shop/jit-hub/jit-hub-gateway"
-    tag: "v1"
+    tag: "seed"
 auth:
   replicaCount: 1
   image:
     repository: "harbor.ccmall.shop/jit-hub/auth-service"
-    tag: "v1"
+    tag: "seed"
   db:
     enabled: true
     loadBalancerIP: "172.16.8.47"
@@ -28,7 +28,7 @@ weather:
   replicaCount: 1
   image:
     repository: "harbor.ccmall.shop/jit-hub/weather-service"
-    tag: "v1"
+    tag: "seed"
   db:
     enabled: true
     loadBalancerIP: "172.16.8.48"
@@ -43,7 +43,7 @@ traffic:
   replicaCount: 1
   image:
     repository: "harbor.ccmall.shop/jit-hub/traffic-service"
-    tag: "v1"
+    tag: "seed"
   db:
     enabled: true
     loadBalancerIP: "172.16.8.49"
@@ -58,7 +58,7 @@ tourist:
   replicaCount: 1
   image:
     repository: "harbor.ccmall.shop/jit-hub/tourist-service"
-    tag: "v1"
+    tag: "seed"
   db:
     enabled: true
     loadBalancerIP: "172.16.8.50"
