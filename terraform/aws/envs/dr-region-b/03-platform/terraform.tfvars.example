@@ -1,0 +1,10 @@
+tailscale_auth_key = "" # tag:dr ... 이 달린 키를 발급받으셔서 넣으셔야합니다
+
+cloudflare_api_token  = ""
+cloudflare_zone_id    = ""
+cloudflare_account_id = ""
+domain_name           = ""
+
+harbor_robot_user       = ""
+harbor_robot_pull_token = ""
+harbor_registry_server  = ""
