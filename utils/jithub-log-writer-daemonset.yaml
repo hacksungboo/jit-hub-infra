@@ -23,7 +23,7 @@ spec:
             - |
               i=1
               while [ $i -le 5 ]; do
-                echo "$(date -Iseconds) [$(hostname)] sample log $i" >> /var/log/jithub_log.log
+                echo "$(date -Iseconds) [$(hostname)] sample log $i" >> /var/log/pods/jithub_log.log
                 i=$((i+1))
               done
               sleep 3600
