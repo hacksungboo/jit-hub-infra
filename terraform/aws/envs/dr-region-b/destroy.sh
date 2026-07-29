@@ -24,12 +24,10 @@ cleanup_k8s () {
   fi
 
   # ArgoCD가 selfHeal로 리소스를 재생성하면 삭제가 무한 반복되므로
-  # 온프레미스의 eks-a Application을 먼저 제거
+  # 온프레미스의 eks-b Application만 먼저 제거
   echo "--- ArgoCD Application 제거 (selfHeal 차단) ---"
-  kubectl --context="${ONPREM_CONTEXT}" delete application \
-    -n argocd -l argocd.argoproj.io/instance --ignore-not-found 2>/dev/null || true
   kubectl --context="${ONPREM_CONTEXT}" get application -n argocd -o name 2>/dev/null \
-    | grep "eks-a" \
+    | grep '/eks-b-' \
     | xargs -r kubectl --context="${ONPREM_CONTEXT}" delete -n argocd --ignore-not-found || true
   sleep 10
 
@@ -98,8 +96,6 @@ cleanup_k8s
 destroy_layer "05-eks-autoscaling"
 destroy_layer "04-eks-workloads"
 destroy_layer "03-platform"
-destroy_layer "02-eks"
-destroy_layer "01-network"
 
 # =========================================================
 # 잔여 ENI 정리 (보안그룹 삭제를 막는 원인)
@@ -109,7 +105,7 @@ echo "================================="
 echo " Checking leftover ENIs"
 echo "================================="
 
-REGION="${AWS_REGION:-ap-northeast-2}"
+REGION="${AWS_REGION:-ap-northeast-1}"
 LEFT_ENI=$(aws ec2 describe-network-interfaces --region "$REGION" \
   --filters "Name=status,Values=available" \
   --query 'NetworkInterfaces[?starts_with(Description, `aws-K8S`)].NetworkInterfaceId' \
@@ -124,6 +120,9 @@ else
   echo "잔여 ENI 없음"
 fi
 
+destroy_layer "02-eks"
+destroy_layer "01-network"
+
 # =========================================================
 # 로컬 kubeconfig 컨텍스트 정리 및 온프레미스 복귀
 # =========================================================
@@ -134,11 +133,7 @@ echo "================================="
 
 kubectl config use-context "${ONPREM_CONTEXT}"
 
-kubectl config delete-context eks-a || true
-
-for ctx in $(kubectl config get-contexts -o name | grep "cluster/hello-eks"); do
-  kubectl config delete-context "$ctx" || true
-done
+kubectl config delete-context eks-b || true
 
 echo ""
 echo "================================="
