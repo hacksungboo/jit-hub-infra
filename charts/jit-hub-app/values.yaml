@@ -27,7 +27,7 @@ gateway:
   service:
     port: 80
 ingressRule:
-  host: leechs.shop
+  host: ccmall.shop
   namespace: jit-hub
 tourist:
   db:

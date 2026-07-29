@@ -8,7 +8,7 @@ gateway:
   replicaCount: 1
   image:
     repository: "harbor.ccmall.shop/jit-hub/jit-hub-gateway"
-    tag: "79d959256720"
+    tag: "seed"
 auth:
   replicaCount: 1
   image:

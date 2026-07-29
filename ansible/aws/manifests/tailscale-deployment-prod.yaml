@@ -38,7 +38,7 @@ spec:
           value: "tailscale-$(NODE_NAME)"
         # subnet router 광고(구조 유지) + 노드별 고유 hostname + accept-routes
         - name: TS_EXTRA_ARGS
-          value: "--advertise-tags=tag:prod-subnet-router --advertise-routes=10.0.0.0/16,172.20.0.0/16 --accept-routes --hostname=prod-router-$(NODE_NAME)"
+          value: "--reset --advertise-tags=tag:prod-subnet-router --accept-routes --hostname=prod-router-$(NODE_NAME)"
         - name: TS_USERSPACE
           value: "false"
         securityContext:
