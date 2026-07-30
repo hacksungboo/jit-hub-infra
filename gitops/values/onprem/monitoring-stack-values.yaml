@@ -93,6 +93,8 @@ curatedLogs:
     storage: 5Gi
   filterPattern: "ERROR|WARN|CRITICAL"
   targetApps: "auth,weather,traffic,tourist,gateway"
+  systemPods: "kube-apiserver,etcd,kube-controller-manager"
+  systemFilterPattern: "status is now: NodeNotReady|etcdserver: no leader|etcdserver: request timed out|connection refused|context deadline exceeded|failed to renew lease"
 
 promtail:
   enabled: true

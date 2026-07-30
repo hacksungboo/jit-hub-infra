@@ -31,6 +31,10 @@ spec:
               value: {{ .Values.curatedLogs.filterPattern | default "ERROR|WARN|CRITICAL" | quote }}
             - name: TARGET_APPS
               value: {{ .Values.curatedLogs.targetApps | default "auth,weather,traffic,tourist,gateway" | quote }}
+            - name: TARGET_SYSTEM_PODS
+              value: {{ .Values.curatedLogs.systemPods | default "" | quote }}
+            - name: SYSTEM_FILTER_PATTERN
+              value: {{ .Values.curatedLogs.systemFilterPattern | default "NodeNotReady|etcdserver|connection refused|context deadline exceeded" | quote }}
           command:
             - /bin/sh
             - -c
@@ -42,36 +46,60 @@ spec:
               mkdir -p /tmp/pids
 
               echo "[curator] watching /var/log/pods for apps: $TARGET_APPS (pattern: $FILTER_PATTERN)"
+              echo "[curator] watching /var/log/pods for system pods: $TARGET_SYSTEM_PODS (pattern: $SYSTEM_FILTER_PATTERN)"
 
               # 컨테이너 디렉토리(포드/컨테이너) 단위로 "가장 최근 번호의 .log 파일"만 tail한다.
               # 재시작으로 0.log -> 1.log 처럼 새 파일이 생기면 기존 tail을 죽이고 새 파일로 갈아탄다.
               # (파일 단위로 tail을 걸면 재시작 후 옛 파일만 계속 보다가 새 로그를 놓치는 문제가 있었음)
+              watch_dir() {
+                dir="$1"
+                label="$2"
+                pattern="$3"
+
+                [ -d "$dir" ] || return
+                latest=$(ls "$dir" 2>/dev/null | grep -E '^[0-9]+\.log$' | sort -n | tail -1)
+                [ -n "$latest" ] || return
+                fullpath="${dir}${latest}"
+
+                key=$(echo "$dir" | tr -c 'a-zA-Z0-9' '_')
+                pidfile="/tmp/pids/${key}.pid"
+                curfile="/tmp/pids/${key}.cur"
+
+                prev=""
+                [ -f "$curfile" ] && prev=$(cat "$curfile")
+
+                if [ "$prev" != "$fullpath" ]; then
+                  if [ -f "$pidfile" ]; then
+                    kill "$(cat "$pidfile")" 2>/dev/null || true
+                  fi
+                  echo "$fullpath" > "$curfile"
+                  # busybox grep은 --line-buffered를 지원하지 않고, 파이프로 나갈 때 stdout을
+                  # 블록 단위로 버퍼링해서 로그가 뜸하면 사실상 안 나온다. awk는 fflush()로
+                  # 매칭된 줄마다 즉시 flush가 가능해서 grep 대신 사용한다.
+                  ( tail -n0 -F "$fullpath" 2>/dev/null | awk -v pat="$pattern" -v node="$NODE_NAME" -v label="$label" '
+                      BEGIN { IGNORECASE = 1 }
+                      $0 ~ pat {
+                        cmd = "date -Iseconds"
+                        cmd | getline ts
+                        close(cmd)
+                        printf "%s [node=%s] [app=%s] %s\n", ts, node, label, $0
+                        fflush()
+                      }
+                    ' >> "$OUT" ) &
+                  echo $! > "$pidfile"
+                fi
+              }
+
               while true; do
                 IFS=','
                 for app in $TARGET_APPS; do
                   for dir in /hostlogs/pods/jit-hub_${app}-service-*/*/; do
-                    [ -d "$dir" ] || continue
-                    latest=$(ls "$dir" 2>/dev/null | grep -E '^[0-9]+\.log$' | sort -n | tail -1)
-                    [ -n "$latest" ] || continue
-                    fullpath="${dir}${latest}"
-
-                    key=$(echo "$dir" | tr -c 'a-zA-Z0-9' '_')
-                    pidfile="/tmp/pids/${key}.pid"
-                    curfile="/tmp/pids/${key}.cur"
-
-                    prev=""
-                    [ -f "$curfile" ] && prev=$(cat "$curfile")
-
-                    if [ "$prev" != "$fullpath" ]; then
-                      if [ -f "$pidfile" ]; then
-                        kill "$(cat "$pidfile")" 2>/dev/null || true
-                      fi
-                      echo "$fullpath" > "$curfile"
-                      ( tail -n0 -F "$fullpath" 2>/dev/null | grep --line-buffered -Ei "$FILTER_PATTERN" | while IFS= read -r line; do
-                          printf '%s [node=%s] [app=%s] %s\n' "$(date -Iseconds)" "$NODE_NAME" "$app" "$line" >> "$OUT"
-                        done ) &
-                      echo $! > "$pidfile"
-                    fi
+                    watch_dir "$dir" "$app" "$FILTER_PATTERN"
+                  done
+                done
+                for comp in $TARGET_SYSTEM_PODS; do
+                  for dir in /hostlogs/pods/kube-system_${comp}-*/*/; do
+                    watch_dir "$dir" "$comp" "$SYSTEM_FILTER_PATTERN"
                   done
                 done
                 unset IFS
