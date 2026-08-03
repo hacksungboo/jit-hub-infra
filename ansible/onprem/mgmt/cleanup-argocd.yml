@@ -1,3 +1,4 @@
+# 사용 x
 ---
 - name: Cleaning up ArgoCD and GitOps Resources
   hosts: localhost

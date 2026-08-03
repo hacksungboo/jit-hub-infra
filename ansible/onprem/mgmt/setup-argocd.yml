@@ -1,3 +1,4 @@
+# 사용 x
 ---
 - name: Bootstrapping ArgoCD on Management Node
   hosts: localhost
