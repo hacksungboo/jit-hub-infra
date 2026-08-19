@@ -26,7 +26,7 @@ spec:
       source:
         repoURL: 'https://github.com/hacksungboo/jit-hub-infra'
         #targetRevision: HEAD
-        targetRevision: test/total # 통합 테스트용 (26.07.24 1600)
+        targetRevision: test/dr-rto # DR 지표 테스트용 (26.08.19 1400)
         path: charts/jit-hub-app
         helm:
           valueFiles:
