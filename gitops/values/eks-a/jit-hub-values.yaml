@@ -17,6 +17,7 @@ auth:
   db:
     enabled: false
     host: "postgres-gateway"
+  jithubLocation: "AWS-Region-A"
 weather:
   replicaCount: 1
   image:
@@ -25,6 +26,7 @@ weather:
   db:
     enabled: false
     host: "postgres-gateway"
+  jithubLocation: "AWS-Region-A"
 traffic:
   replicaCount: 1
   image:
@@ -33,6 +35,7 @@ traffic:
   db:
     enabled: false
     host: "postgres-gateway"
+  jithubLocation: "AWS-Region-A"
 tourist:
   replicaCount: 1
   image:
@@ -41,7 +44,7 @@ tourist:
   db:
     enabled: false
     host: "postgres-gateway"
-
+  jithubLocation: "AWS-Region-A"
 # sLLM 분석 파이프라인(FastAPI+Ollama+poller)은 onprem에만 배포 (7/15 팀 결정)
 sllm:
   enabled: false

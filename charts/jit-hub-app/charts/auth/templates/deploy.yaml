@@ -27,6 +27,8 @@ spec:
           value: {{ .Values.db.user | quote }}
         - name: DB_NAME
           value: {{ .Values.db.name | quote }}
+        - name: JITHUB_LOCATION
+          value: {{ .Values.jithubLocation | default "UNKNOWN" | quote }}  
         command:
         - /bin/sh
         - -ec

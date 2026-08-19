@@ -260,6 +260,11 @@ main() {
   # -------------------------------------------------------
   # 1. EKS-B 클러스터 프로비저닝
   # -------------------------------------------------------
+  record_marker \
+    "T3_EKSB_TERRAFORM_APPLY_STARTED" \
+    "controller" \
+    "eks-b" \
+    "Terraform apply started for DR EKS stack"
 
   apply_stack "$DR_EKS_STACK" \
     || fail_without_traffic_change $? \
@@ -487,10 +492,26 @@ main() {
   # -------------------------------------------------------
 
   run_step \
-    "external_health_after_dr_switch" \
+    "external_site_eks_b" \
     "eks-b" \
-    check_external_health \
+    check_external_site "AWS-Region-B" \
     || rollback_traffic $?
+
+  record_marker \
+    "T4_EKSB_EXTERNAL_API_OK" \
+    "external-probe" \
+    "eks-b" \
+    "First successful business API response from EKS-B"
+
+  record_duration_between \
+    "eksb_provision_time" \
+    "T3_EKSB_TERRAFORM_APPLY_STARTED" \
+    "T4_EKSB_EXTERNAL_API_OK"
+
+  record_duration_between \
+    "e2e_recovery_eksb" \
+    "T0_FAILURE_INJECTED" \
+    "T4_EKSB_EXTERNAL_API_OK"
 
   capture_cluster_state \
     "$CTX_B" \

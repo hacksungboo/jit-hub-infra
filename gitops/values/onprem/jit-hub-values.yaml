@@ -24,6 +24,7 @@ auth:
       nfs:
         server: "172.16.8.203"
         path: "/nfs/shared/jithub-authdb"
+  jithubLocation: "ON-PREM"
 weather:
   replicaCount: 1
   image:
@@ -39,6 +40,7 @@ weather:
       nfs:
         server: "172.16.8.203"
         path: "/nfs/shared/jithub-weatherdb"
+  jithubLocation: "ON-PREM"
 traffic:
   replicaCount: 1
   image:
@@ -54,6 +56,7 @@ traffic:
       nfs:
         server: "172.16.8.203"
         path: "/nfs/shared/jithub-trafficdb"
+  jithubLocation: "ON-PREM"
 tourist:
   replicaCount: 1
   image:
@@ -69,7 +72,7 @@ tourist:
       nfs:
         server: "172.16.8.203"
         path: "/nfs/shared/jithub-touristdb"
-
+  jithubLocation: "ON-PREM"
 sllm:
   enabled: false # sLLM 분석 파이프라인은 onprem에서만 활성화 (7/15 팀 결정)
   loki:
