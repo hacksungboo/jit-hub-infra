@@ -1,0 +1,154 @@
+name: Terraform Init on Change
+on:
+  push:
+    branches: [test/total]
+    paths:
+      - "terraform/**"
+  pull_request:
+    paths:
+      - "terraform/**"
+  workflow_dispatch:
+    inputs:
+      run_all:
+        description: "변경 여부와 무관하게 terraform/ 아래 모든 루트 디렉터리에서 init 실행"
+        type: boolean
+        default: false
+
+permissions:
+  id-token: write # AWS OIDC Assume Role 용
+  contents: read
+
+concurrency:
+  group: terraform-init-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TF_VERSION: "1.9.8" # 각 디렉터리의 required_version(>= 1.8) 을 만족하는 버전으로 필요 시 조정
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+
+jobs:
+  detect-changed-roots:
+    name: Detect changed terraform roots
+    runs-on: ubuntu-latest
+    outputs:
+      roots: ${{ steps.compute.outputs.roots }}
+      has_roots: ${{ steps.compute.outputs.has_roots }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # git diff 로 변경 파일을 뽑기 위해 전체 히스토리 필요
+
+      - name: Compute changed terraform root directories
+        id: compute
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          EMPTY_TREE="4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.run_all }}" == "true" ]]; then
+            echo "run_all=true -> terraform/ 아래 전체를 대상으로 스캔합니다."
+            mapfile -t CHANGED_FILES < <(find terraform -type f 2>/dev/null || true)
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+            HEAD="${{ github.event.pull_request.head.sha }}"
+            mapfile -t CHANGED_FILES < <(git diff --name-only "$BASE" "$HEAD" -- terraform || true)
+          else
+            BEFORE="${{ github.event.before }}"
+            AFTER="${{ github.sha }}"
+            if [[ -z "$BEFORE" || "$BEFORE" =~ ^0+$ ]]; then
+              BEFORE="$EMPTY_TREE"
+            fi
+            mapfile -t CHANGED_FILES < <(git diff --name-only "$BEFORE" "$AFTER" -- terraform || true)
+          fi
+
+          echo "----- changed files under terraform/ -----"
+          printf '%s\n' "${CHANGED_FILES[@]:-}"
+          echo "-------------------------------------------"
+
+          declare -A ROOTS=()
+
+          for f in "${CHANGED_FILES[@]:-}"; do
+            [[ -z "$f" ]] && continue
+            dir=$(dirname "$f")
+
+            # terraform/ 이하를 벗어날 때까지 상위 디렉터리로 올라가며
+            # "*.tf 를 직접 담고 있는, modules 가 아닌 디렉터리"를 찾는다.
+            while [[ "$dir" == terraform* ]]; do
+              if [[ "$dir" == */modules || "$dir" == */modules/* ]]; then
+                parent=$(dirname "$dir")
+                [[ "$parent" == "$dir" ]] && break
+                dir="$parent"
+                continue
+              fi
+
+              if compgen -G "${dir}/*.tf" > /dev/null; then
+                ROOTS["$dir"]=1
+                break
+              fi
+
+              parent=$(dirname "$dir")
+              [[ "$parent" == "$dir" ]] && break
+              dir="$parent"
+            done
+          done
+
+          if [[ ${#ROOTS[@]} -eq 0 ]]; then
+            echo "roots=[]" >> "$GITHUB_OUTPUT"
+            echo "has_roots=false" >> "$GITHUB_OUTPUT"
+            echo "감지된 terraform 루트 없음 -> init job 은 skip 됩니다."
+            exit 0
+          fi
+
+          JSON=$(printf '%s\n' "${!ROOTS[@]}" | sort -u | jq -R . | jq -s -c .)
+
+          echo "----- detected terraform root directories -----"
+          echo "$JSON"
+          echo "-------------------------------------------------"
+
+          {
+            echo "roots=$JSON"
+            echo "has_roots=true"
+          } >> "$GITHUB_OUTPUT"
+
+  terraform-init:
+    name: terraform init (${{ matrix.dir }})
+    needs: detect-changed-roots
+    if: needs.detect-changed-roots.outputs.has_roots == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dir: ${{ fromJson(needs.detect-changed-roots.outputs.roots) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # S3 backend(및 lock 용 DynamoDB/S3 native lock) 접근을 위한 AWS 자격증명
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_TF_STATE_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION || 'ap-northeast-2' }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      # provider 플러그인 캐시. 같은 디렉터리(.terraform.lock.hcl 동일)면 재사용되어
+      # provider 다운로드 시간을 줄여준다. (state 자체와는 무관 - 아래 채팅 답변 참고)
+      - name: Cache terraform providers
+        uses: actions/cache@v4
+        with:
+          path: ${{ matrix.dir }}/.terraform
+          key: tf-init-${{ matrix.dir }}-${{ hashFiles(format('{0}/.terraform.lock.hcl', matrix.dir)) }}
+          restore-keys: |
+            tf-init-${{ matrix.dir }}-
+
+      - name: terraform init
+        working-directory: ${{ matrix.dir }}
+        run: terraform init -input=false -no-color
