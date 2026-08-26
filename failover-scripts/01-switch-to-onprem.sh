@@ -152,34 +152,11 @@ main() {
   # 외부 도메인 확인
   # -------------------------------------------------------
 
-  # run_step \
-  #   "external_health_after_switch" \
-  #   "onprem" \
-  #   check_external_health \
-  #   || rollback $?
-
   run_step \
-    "external_site_onprem" \
+    "external_health_after_switch" \
     "onprem" \
-    check_external_site "ON-PREM" \
+    check_external_health \
     || rollback $?
-
-  record_marker \
-    "T1_ROUTE_TO_ONPREM" \
-    "external-probe" \
-    "onprem" \
-    "Cloudflare route verified via served_by"
-
-  record_marker \
-    "T2_ONPREM_USER_API_OK" \
-    "external-probe" \
-    "onprem" \
-    "First successful business API response from on-prem"
-
-  record_duration_between \
-    "service_outage_onprem" \
-    "T0_FAILURE_INJECTED" \
-    "T2_ONPREM_USER_API_OK"
 
   capture_cluster_state \
     "$CTX_ONPREM" \

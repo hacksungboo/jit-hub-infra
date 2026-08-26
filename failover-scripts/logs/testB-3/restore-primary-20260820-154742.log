@@ -1,0 +1,155 @@
+2026-08-20T15:47:42+09:00 [20260820-154742] [restore-primary] [INFO] EKS-B → EKS-A Primary 트래픽 원복 시작
+2026-08-20T15:47:42+09:00 [20260820-154742] [restore-primary] [INFO] Terraform 및 GitOps 작업 없이 cloudflared replica만 이동
+2026-08-20T15:47:42+09:00 [20260820-154742] [restore-primary] [INFO] STEP_START step=check_eks_a_context target=eks-a
+2026-08-20T15:47:42+09:00 [20260820-154742] [restore-primary] [INFO] STEP_SUCCESS step=check_eks_a_context target=eks-a duration=0s
+2026-08-20T15:47:42+09:00 [20260820-154742] [restore-primary] [INFO] STEP_START step=check_eks_a_cluster target=eks-a
+2026-08-20T15:47:42+09:00 [20260820-154742] [restore-primary] [INFO] Kubernetes API 확인 context=eks-a
+2026-08-20T15:47:42+09:00 [20260820-154742] [restore-primary] [INFO] Kubernetes API 확인 context=eks-a
+2026-08-20T15:47:44+09:00 [20260820-154742] [restore-primary] [INFO] STEP_SUCCESS step=check_eks_a_cluster target=eks-a duration=2s
+2026-08-20T15:47:44+09:00 [20260820-154742] [restore-primary] [INFO] STEP_START step=wait_eks_a_nodes target=eks-a
+node/ip-10-0-1-134.ap-northeast-2.compute.internal condition met
+node/ip-10-0-1-211.ap-northeast-2.compute.internal condition met
+node/ip-10-0-2-115.ap-northeast-2.compute.internal condition met
+node/ip-10-0-2-216.ap-northeast-2.compute.internal condition met
+node/ip-10-0-2-234.ap-northeast-2.compute.internal condition met
+node/ip-10-0-2-52.ap-northeast-2.compute.internal condition met
+2026-08-20T15:47:46+09:00 [20260820-154742] [restore-primary] [INFO] STEP_SUCCESS step=wait_eks_a_nodes target=eks-a duration=2s
+2026-08-20T15:47:46+09:00 [20260820-154742] [restore-primary] [INFO] STEP_START step=wait_eks_a_app_pods target=eks-a
+2026-08-20T15:47:51+09:00 [20260820-154742] [restore-primary] [INFO] 애플리케이션 Pod 상태 total=1 ready=1 attempt=1/60
+2026-08-20T15:47:51+09:00 [20260820-154742] [restore-primary] [INFO] 애플리케이션 Pod 상태 total=1 ready=1 attempt=1/60
+2026-08-20T15:47:51+09:00 [20260820-154742] [restore-primary] [INFO] 애플리케이션 Pod Ready 완료 selector=app=gateway
+2026-08-20T15:47:51+09:00 [20260820-154742] [restore-primary] [INFO] 애플리케이션 Pod Ready 완료 selector=app=gateway
+2026-08-20T15:47:51+09:00 [20260820-154742] [restore-primary] [INFO] STEP_SUCCESS step=wait_eks_a_app_pods target=eks-a duration=5s
+2026-08-20T15:47:51+09:00 [20260820-154742] [restore-primary] [INFO] STEP_START step=eks_a_internal_health target=eks-a
+2026-08-20T15:47:51+09:00 [20260820-154742] [restore-primary] [INFO] 내부 헬스체크 context=eks-a service=gateway-service
+2026-08-20T15:47:51+09:00 [20260820-154742] [restore-primary] [INFO] 내부 헬스체크 context=eks-a service=gateway-service
+{"status":"ok","service":"auth","location":"LOCAL-DEV","timestamp":"2026-08-20T06:47:53.891508+00:00"}pod "healthcheck-20494-1787208471" deleted
+2026-08-20T15:47:55+09:00 [20260820-154742] [restore-primary] [INFO] STEP_SUCCESS step=eks_a_internal_health target=eks-a duration=4s
+2026-08-20T15:47:55+09:00 [20260820-154742] [restore-primary] [INFO] 클러스터 상태 수집 context=eks-a label=before-primary-restore
+
+===== before-primary-restore: Nodes =====
+NAME                                            STATUS   ROLES    AGE     VERSION                INTERNAL-IP   EXTERNAL-IP   OS-IMAGE         KERNEL-VERSION                  CONTAINER-RUNTIME
+ip-10-0-1-134.ap-northeast-2.compute.internal   Ready    <none>   4h25m   v1.31.13-eks-ecaa3a6   10.0.1.134    <none>        Amazon Linux 2   5.10.245-245.983.amzn2.x86_64   containerd://1.7.29
+ip-10-0-1-211.ap-northeast-2.compute.internal   Ready    <none>   4h25m   v1.31.13-eks-ecaa3a6   10.0.1.211    <none>        Amazon Linux 2   5.10.245-245.983.amzn2.x86_64   containerd://1.7.29
+ip-10-0-2-115.ap-northeast-2.compute.internal   Ready    <none>   4h25m   v1.31.13-eks-ecaa3a6   10.0.2.115    <none>        Amazon Linux 2   5.10.245-245.983.amzn2.x86_64   containerd://1.7.29
+ip-10-0-2-216.ap-northeast-2.compute.internal   Ready    <none>   4h25m   v1.31.13-eks-ecaa3a6   10.0.2.216    <none>        Amazon Linux 2   5.10.245-245.983.amzn2.x86_64   containerd://1.7.29
+ip-10-0-2-234.ap-northeast-2.compute.internal   Ready    <none>   4h7m    v1.31.13-eks-ecaa3a6   10.0.2.234    <none>        Amazon Linux 2   5.10.245-245.983.amzn2.x86_64   containerd://1.7.29
+ip-10-0-2-52.ap-northeast-2.compute.internal    Ready    <none>   4h25m   v1.31.13-eks-ecaa3a6   10.0.2.52     <none>        Amazon Linux 2   5.10.245-245.983.amzn2.x86_64   containerd://1.7.29
+
+===== before-primary-restore: Cloudflared =====
+NAME                          READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS    IMAGES                             SELECTOR
+deployment.apps/cloudflared   0/0     0            0           4h23m   cloudflared   cloudflare/cloudflared:2024.11.0   app=cloudflared
+
+===== before-primary-restore: Application =====
+NAME                               READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS   IMAGES                                            SELECTOR
+deployment.apps/auth-service       1/1     1            1           4h23m   auth         harbor.ccmall.shop/jit-hub/auth-service:seed      app=auth
+deployment.apps/gateway-service    1/1     1            1           4h23m   gateway      harbor.ccmall.shop/jit-hub/jit-hub-gateway:seed   app=gateway
+deployment.apps/postgres-gateway   1/1     1            1           4h23m   pgbouncer    edoburu/pgbouncer:v1.25.2-p0                      app.kubernetes.io/name=postgres-gateway
+deployment.apps/tourist-service    3/3     3            3           4h23m   tourist      harbor.ccmall.shop/jit-hub/tourist-service:seed   app=tourist
+deployment.apps/traffic-service    3/3     3            3           4h23m   traffic      harbor.ccmall.shop/jit-hub/traffic-service:seed   app=traffic
+deployment.apps/weather-service    3/3     3            3           4h23m   weather      harbor.ccmall.shop/jit-hub/weather-service:seed   app=weather
+
+NAME                                    READY   STATUS    RESTARTS   AGE     IP           NODE                                            NOMINATED NODE   READINESS GATES
+pod/auth-service-6444fd4464-7g9ns       1/1     Running   0          4h23m   10.0.2.36    ip-10-0-2-115.ap-northeast-2.compute.internal   <none>           <none>
+pod/gateway-service-675bcb667d-dvn64    1/1     Running   0          4h23m   10.0.2.73    ip-10-0-2-216.ap-northeast-2.compute.internal   <none>           <none>
+pod/postgres-gateway-7ffb4865f5-bmpss   1/1     Running   0          4h23m   10.0.1.142   ip-10-0-1-211.ap-northeast-2.compute.internal   <none>           <none>
+pod/tourist-service-5b48c7bff4-b52m6    1/1     Running   0          66s     10.0.2.5     ip-10-0-2-234.ap-northeast-2.compute.internal   <none>           <none>
+pod/tourist-service-5b48c7bff4-p89s5    1/1     Running   0          4h20m   10.0.1.77    ip-10-0-1-134.ap-northeast-2.compute.internal   <none>           <none>
+pod/tourist-service-5b48c7bff4-zrtrg    1/1     Running   0          66s     10.0.2.135   ip-10-0-2-115.ap-northeast-2.compute.internal   <none>           <none>
+pod/traffic-service-5496fbcdbb-2m9mz    1/1     Running   0          66s     10.0.2.218   ip-10-0-2-216.ap-northeast-2.compute.internal   <none>           <none>
+pod/traffic-service-5496fbcdbb-7zk5b    1/1     Running   0          66s     10.0.2.215   ip-10-0-2-234.ap-northeast-2.compute.internal   <none>           <none>
+pod/traffic-service-5496fbcdbb-qqjp8    1/1     Running   0          4h6m    10.0.1.81    ip-10-0-1-134.ap-northeast-2.compute.internal   <none>           <none>
+pod/weather-service-59c555bf98-7ltfs    1/1     Running   0          66s     10.0.2.13    ip-10-0-2-234.ap-northeast-2.compute.internal   <none>           <none>
+pod/weather-service-59c555bf98-98sck    1/1     Running   0          66s     10.0.1.169   ip-10-0-1-211.ap-northeast-2.compute.internal   <none>           <none>
+pod/weather-service-59c555bf98-scg78    1/1     Running   0          4h3m    10.0.2.15    ip-10-0-2-115.ap-northeast-2.compute.internal   <none>           <none>
+
+NAME                       TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE     SELECTOR
+service/auth-service       ClusterIP   172.20.65.241    <none>        8001/TCP   4h23m   app=auth
+service/gateway-service    ClusterIP   172.20.233.56    <none>        80/TCP     4h23m   app=gateway
+service/postgres-gateway   ClusterIP   172.20.188.18    <none>        5432/TCP   4h23m   app.kubernetes.io/name=postgres-gateway
+service/tourist-service    ClusterIP   172.20.243.142   <none>        8004/TCP   4h23m   app=tourist
+service/traffic-service    ClusterIP   172.20.172.12    <none>        8003/TCP   4h23m   app=traffic
+service/weather-service    ClusterIP   172.20.73.231    <none>        8002/TCP   4h23m   app=weather
+
+NAME                                                       CLASS   HOSTS         ADDRESS                                                                        PORTS   AGE
+ingress.networking.k8s.io/eks-a-jit-hub-app-ingress-rule   nginx   ccmall.shop   aa2faa663ab7c48b7b1831923d29892b-1150915636.ap-northeast-2.elb.amazonaws.com   80      4h23m
+
+2026-08-20T15:48:02+09:00 [20260820-154742] [restore-primary] [INFO] Kubernetes API 확인 context=eks-b
+2026-08-20T15:48:05+09:00 [20260820-154742] [restore-primary] [INFO] Kubernetes API 확인 context=kubernetes-admin@kubernetes
+2026-08-20T15:48:05+09:00 [20260820-154742] [restore-primary] [INFO] 원복 전 replica eks-a=0 eks-b=1 onprem=0
+2026-08-20T15:48:05+09:00 [20260820-154742] [restore-primary] [INFO] STEP_START step=activate_cloudflared target=eks-a
+2026-08-20T15:48:05+09:00 [20260820-154742] [restore-primary] [INFO] cloudflared scale context=eks-a replicas=1
+2026-08-20T15:48:05+09:00 [20260820-154742] [restore-primary] [INFO] cloudflared scale context=eks-a replicas=1
+deployment.apps/cloudflared scaled
+deployment "cloudflared" successfully rolled out
+2026-08-20T15:48:14+09:00 [20260820-154742] [restore-primary] [INFO] cloudflared 대기 context=eks-a desired=1 ready=1 expected=1 attempt=1/30
+2026-08-20T15:48:14+09:00 [20260820-154742] [restore-primary] [INFO] cloudflared 대기 context=eks-a desired=1 ready=1 expected=1 attempt=1/30
+2026-08-20T15:48:14+09:00 [20260820-154742] [restore-primary] [INFO] STEP_SUCCESS step=activate_cloudflared target=eks-a duration=9s
+2026-08-20T15:48:15+09:00 [20260820-154742] [restore-primary] [INFO] make-before-break: EKS-A connector 활성화 완료
+2026-08-20T15:48:15+09:00 [20260820-154742] [restore-primary] [INFO] Kubernetes API 확인 context=eks-b
+2026-08-20T15:48:19+09:00 [20260820-154742] [restore-primary] [INFO] STEP_START step=deactivate_cloudflared target=eks-b
+2026-08-20T15:48:19+09:00 [20260820-154742] [restore-primary] [INFO] cloudflared scale context=eks-b replicas=0
+2026-08-20T15:48:19+09:00 [20260820-154742] [restore-primary] [INFO] cloudflared scale context=eks-b replicas=0
+deployment.apps/cloudflared scaled
+2026-08-20T15:48:26+09:00 [20260820-154742] [restore-primary] [INFO] cloudflared 대기 context=eks-b desired=0 ready=0 expected=0 attempt=1/30
+2026-08-20T15:48:26+09:00 [20260820-154742] [restore-primary] [INFO] cloudflared 대기 context=eks-b desired=0 ready=0 expected=0 attempt=1/30
+2026-08-20T15:48:26+09:00 [20260820-154742] [restore-primary] [INFO] STEP_SUCCESS step=deactivate_cloudflared target=eks-b duration=7s
+2026-08-20T15:48:27+09:00 [20260820-154742] [restore-primary] [INFO] Kubernetes API 확인 context=kubernetes-admin@kubernetes
+2026-08-20T15:48:27+09:00 [20260820-154742] [restore-primary] [INFO] STEP_START step=external_health_after_primary_restore target=eks-a
+2026-08-20T15:48:28+09:00 [20260820-154742] [restore-primary] [INFO] 외부 헬스체크 성공 url=https://ccmall.shop/health code=200
+2026-08-20T15:48:28+09:00 [20260820-154742] [restore-primary] [INFO] 외부 헬스체크 성공 url=https://ccmall.shop/health code=200
+2026-08-20T15:48:28+09:00 [20260820-154742] [restore-primary] [INFO] STEP_SUCCESS step=external_health_after_primary_restore target=eks-a duration=1s
+2026-08-20T15:48:28+09:00 [20260820-154742] [restore-primary] [INFO] 클러스터 상태 수집 context=eks-a label=after-primary-restore
+
+===== after-primary-restore: Nodes =====
+NAME                                            STATUS   ROLES    AGE     VERSION                INTERNAL-IP   EXTERNAL-IP   OS-IMAGE         KERNEL-VERSION                  CONTAINER-RUNTIME
+ip-10-0-1-134.ap-northeast-2.compute.internal   Ready    <none>   4h25m   v1.31.13-eks-ecaa3a6   10.0.1.134    <none>        Amazon Linux 2   5.10.245-245.983.amzn2.x86_64   containerd://1.7.29
+ip-10-0-1-211.ap-northeast-2.compute.internal   Ready    <none>   4h25m   v1.31.13-eks-ecaa3a6   10.0.1.211    <none>        Amazon Linux 2   5.10.245-245.983.amzn2.x86_64   containerd://1.7.29
+ip-10-0-2-115.ap-northeast-2.compute.internal   Ready    <none>   4h25m   v1.31.13-eks-ecaa3a6   10.0.2.115    <none>        Amazon Linux 2   5.10.245-245.983.amzn2.x86_64   containerd://1.7.29
+ip-10-0-2-216.ap-northeast-2.compute.internal   Ready    <none>   4h25m   v1.31.13-eks-ecaa3a6   10.0.2.216    <none>        Amazon Linux 2   5.10.245-245.983.amzn2.x86_64   containerd://1.7.29
+ip-10-0-2-234.ap-northeast-2.compute.internal   Ready    <none>   4h7m    v1.31.13-eks-ecaa3a6   10.0.2.234    <none>        Amazon Linux 2   5.10.245-245.983.amzn2.x86_64   containerd://1.7.29
+ip-10-0-2-52.ap-northeast-2.compute.internal    Ready    <none>   4h25m   v1.31.13-eks-ecaa3a6   10.0.2.52     <none>        Amazon Linux 2   5.10.245-245.983.amzn2.x86_64   containerd://1.7.29
+
+===== after-primary-restore: Cloudflared =====
+NAME                          READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS    IMAGES                             SELECTOR
+deployment.apps/cloudflared   1/1     1            1           4h24m   cloudflared   cloudflare/cloudflared:2024.11.0   app=cloudflared
+
+NAME                              READY   STATUS    RESTARTS   AGE   IP           NODE                                            NOMINATED NODE   READINESS GATES
+pod/cloudflared-ff4df875f-q5dhb   1/1     Running   0          24s   10.0.2.217   ip-10-0-2-234.ap-northeast-2.compute.internal   <none>           <none>
+
+===== after-primary-restore: Application =====
+NAME                               READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS   IMAGES                                            SELECTOR
+deployment.apps/auth-service       1/1     1            1           4h23m   auth         harbor.ccmall.shop/jit-hub/auth-service:seed      app=auth
+deployment.apps/gateway-service    1/1     1            1           4h23m   gateway      harbor.ccmall.shop/jit-hub/jit-hub-gateway:seed   app=gateway
+deployment.apps/postgres-gateway   1/1     1            1           4h23m   pgbouncer    edoburu/pgbouncer:v1.25.2-p0                      app.kubernetes.io/name=postgres-gateway
+deployment.apps/tourist-service    3/3     3            3           4h23m   tourist      harbor.ccmall.shop/jit-hub/tourist-service:seed   app=tourist
+deployment.apps/traffic-service    3/3     3            3           4h23m   traffic      harbor.ccmall.shop/jit-hub/traffic-service:seed   app=traffic
+deployment.apps/weather-service    3/3     3            3           4h23m   weather      harbor.ccmall.shop/jit-hub/weather-service:seed   app=weather
+
+NAME                                    READY   STATUS    RESTARTS   AGE     IP           NODE                                            NOMINATED NODE   READINESS GATES
+pod/auth-service-6444fd4464-7g9ns       1/1     Running   0          4h23m   10.0.2.36    ip-10-0-2-115.ap-northeast-2.compute.internal   <none>           <none>
+pod/gateway-service-675bcb667d-dvn64    1/1     Running   0          4h23m   10.0.2.73    ip-10-0-2-216.ap-northeast-2.compute.internal   <none>           <none>
+pod/postgres-gateway-7ffb4865f5-bmpss   1/1     Running   0          4h23m   10.0.1.142   ip-10-0-1-211.ap-northeast-2.compute.internal   <none>           <none>
+pod/tourist-service-5b48c7bff4-b52m6    1/1     Running   0          100s    10.0.2.5     ip-10-0-2-234.ap-northeast-2.compute.internal   <none>           <none>
+pod/tourist-service-5b48c7bff4-p89s5    1/1     Running   0          4h21m   10.0.1.77    ip-10-0-1-134.ap-northeast-2.compute.internal   <none>           <none>
+pod/tourist-service-5b48c7bff4-zrtrg    1/1     Running   0          100s    10.0.2.135   ip-10-0-2-115.ap-northeast-2.compute.internal   <none>           <none>
+pod/traffic-service-5496fbcdbb-2m9mz    1/1     Running   0          100s    10.0.2.218   ip-10-0-2-216.ap-northeast-2.compute.internal   <none>           <none>
+pod/traffic-service-5496fbcdbb-7zk5b    1/1     Running   0          100s    10.0.2.215   ip-10-0-2-234.ap-northeast-2.compute.internal   <none>           <none>
+pod/traffic-service-5496fbcdbb-qqjp8    1/1     Running   0          4h7m    10.0.1.81    ip-10-0-1-134.ap-northeast-2.compute.internal   <none>           <none>
+pod/weather-service-59c555bf98-7ltfs    1/1     Running   0          100s    10.0.2.13    ip-10-0-2-234.ap-northeast-2.compute.internal   <none>           <none>
+pod/weather-service-59c555bf98-98sck    1/1     Running   0          100s    10.0.1.169   ip-10-0-1-211.ap-northeast-2.compute.internal   <none>           <none>
+pod/weather-service-59c555bf98-scg78    1/1     Running   0          4h4m    10.0.2.15    ip-10-0-2-115.ap-northeast-2.compute.internal   <none>           <none>
+
+NAME                       TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE     SELECTOR
+service/auth-service       ClusterIP   172.20.65.241    <none>        8001/TCP   4h23m   app=auth
+service/gateway-service    ClusterIP   172.20.233.56    <none>        80/TCP     4h23m   app=gateway
+service/postgres-gateway   ClusterIP   172.20.188.18    <none>        5432/TCP   4h23m   app.kubernetes.io/name=postgres-gateway
+service/tourist-service    ClusterIP   172.20.243.142   <none>        8004/TCP   4h23m   app=tourist
+service/traffic-service    ClusterIP   172.20.172.12    <none>        8003/TCP   4h23m   app=traffic
+service/weather-service    ClusterIP   172.20.73.231    <none>        8002/TCP   4h23m   app=weather
+
+NAME                                                       CLASS   HOSTS         ADDRESS                                                                        PORTS   AGE
+ingress.networking.k8s.io/eks-a-jit-hub-app-ingress-rule   nginx   ccmall.shop   aa2faa663ab7c48b7b1831923d29892b-1150915636.ap-northeast-2.elb.amazonaws.com   80      4h23m
+
+2026-08-20T15:48:33+09:00 [20260820-154742] [restore-primary] [INFO] EKS-B → EKS-A Primary 트래픽 원복 완료
+2026-08-20T15:48:33+09:00 [20260820-154742] [restore-primary] [INFO] SCRIPT_END status=SUCCESS duration=51s message=cloudflared replica를 EKS-B에서 EKS-A로 이동 완료
